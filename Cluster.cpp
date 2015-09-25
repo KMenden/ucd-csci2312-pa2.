@@ -71,89 +71,92 @@ namespace Clustering {
             points->p = point;
             points->next = nullptr;
             size++;
+            return;
         }
-        else
-        {
-            LNodePtr cursor;
-            cursor = points;
-            for(int i = 1; i < size; i++)
-            {/*
-                if((*cursor->p) >= *point)
-                {
 
-                    LNodePtr tempnext = cursor;
-                    LNodePtr tempcursor = points;
-                    for (int i = 0; i < size; i++)
-                    {
-                        if(tempcursor->next == cursor)
-                        {
-                            tempcursor->next = new LNode;
-                            tempcursor->next->p = point;
-                            tempcursor->next->next = tempnext;
-                        }
-                        else
-                        {
-                         tempcursor = tempcursor->next;
-                        }
-                    }
-                }*/
-                cursor = cursor->next;
-            }
-                    cursor->next = new LNode;
-                    cursor->next->next = nullptr;
-                    cursor->next->p = point;
+        LNodePtr current = points;
+        LNodePtr prev = points;
+        for( ; current != nullptr; current = current->next)
+        {
+            if((*current->p) > *point)
+            {
+                if(current == prev)
+                {
+                    points = new LNode;
+                    points->p = point;
+                    points->next = current;
                     size++;
+                    return;
+                }
+                else
+                {
+                    prev->next = new LNode;
+                    prev->next->p = point;
+                    prev->next->next = current;
+                    size++;
+                    return;
+                }
+            }
+            else
+            {
+                if(current != prev)
+                {
+                    prev = prev->next;
+                }
+            }
         }
+        if(current == nullptr)
+        {
+            prev->next = new LNode;
+            prev->next->p = point;
+            prev->next->next = nullptr;
+            size++;
+            return;
+        }
+
     }
 
     const PointPtr& Cluster::remove(const PointPtr &point)
     {
-        if(points->p == point)
+        if(points == nullptr)
         {
-            if (points->next == nullptr)
+            return point;
+        }
+
+        LNodePtr current = points;
+        LNodePtr prev = points;
+        for( ; current != nullptr; current = current->next)
+        {
+            if(current->p == point)
             {
-                delete points;
-                --size;
-                return point;
+                if(current == prev)
+                {
+                    points = prev->next;
+                    size--;
+                    delete current;
+                    return point;
+                }
+                else
+                {
+                    prev->next = current->next;
+                    delete current;
+                    size--;
+                    return point;
+                }
             }
             else
             {
-                LNodePtr tempoint;
-                tempoint = points->next;
-                delete points;
-                points = tempoint;
-                --size;
-                return point;
-            }
-        }
-        LNodePtr cursor;
-        cursor = points;
-        int index;
-        for(int i = 1; i < size; i++)
-        {
-            cursor = cursor->next;
-            if(cursor->p == point)
-            {
-                LNodePtr tempoint;
-                tempoint = cursor->next;
-                delete cursor;
-                --size;
-                index = i;
-                cursor = points;
-                for(int i = 1; i < index; i++)
+                if(current != prev)
                 {
-                    cursor = cursor->next;
+                    prev = prev->next;
                 }
-                cursor->next = tempoint;
-                return tempoint->p;
-
             }
         }
     }
 
     std::ostream &operator<<(std::ostream &os, const Cluster &ctemp) {
 
-        if (ctemp.points == nullptr) {
+        if (ctemp.size == 0) {
             os << "The list is empty" << std::endl;
         }
         else {
