@@ -22,9 +22,9 @@ int main()
     c1.add(&p2);
     c1.add(&p3);
     c1.add(&p4);
-    c1.remove(&p1);
-    c1.remove(&p4);
-    cout << c1 << endl;
+    Cluster c2(c1);
+    c2 = c1;
+    cout << c2;
     return 0;
 
 }

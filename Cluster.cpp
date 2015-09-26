@@ -7,25 +7,123 @@ namespace Clustering {
 
     Cluster::Cluster(const Cluster &other)
     {
+        if(other.points == nullptr)
+        {
+            return;
+        }
         size = other.size;
         points = new LNode;
-        points->p = other.points->p;
-        points->next = nullptr;
-        LNodePtr cursor = points;
-        LNodePtr othercursor = other.points;
-        for(int i = 1; i < size; i++)
+        LNodePtr current = points;
+        LNodePtr othercurrent = other.points;
+
+        for( ; othercurrent != nullptr; current = current->next)
         {
-            cursor->next = othercursor->next;
-            cursor = cursor->next;
-            othercursor = othercursor->next;
+            current->p = othercurrent->p;
+            othercurrent = othercurrent->next;
+            if(othercurrent != nullptr)
+            {
+                current->next = new LNode;
+            }
+            else
+            {
+                current->next = nullptr;
+                return;
+            }
         }
     }
 
     Cluster& Cluster::operator=(const Cluster &other)
     {
-        size = other.size;
-        points = other.points;
-        return *this;
+        if(points == nullptr)
+        {
+            if(other.points == nullptr)
+            {
+                return *this;
+            }
+            size = other.size;
+            points = new LNode;
+            LNodePtr current = points;
+            LNodePtr othercurrent = other.points;
+
+            for( ; othercurrent != nullptr; current = current->next)
+            {
+                current->p = othercurrent->p;
+                othercurrent = othercurrent->next;
+                if(othercurrent != nullptr)
+                {
+                    current->next = new LNode;
+                }
+                else
+                {
+                    current->next = nullptr;
+                    return *this;
+                }
+            }
+        }
+        else
+        {
+          LNodePtr current = points;
+            LNodePtr prev = points;
+            for( ; current != nullptr; current = current->next)
+            {
+                if(current->next == nullptr)
+                {
+                    if(current == prev)
+                    {
+                        delete points;
+                        size--;
+                        points = nullptr;
+                        current = points;
+                        break;
+                    }
+                    else
+                    {
+                        delete current;
+                        prev->next = nullptr;
+                        size--;
+                        prev = points;
+                        current = points;
+                    }
+                }
+                else
+                {
+                    if(current != prev)
+                    {
+                        prev = prev->next;
+                    }
+                }
+
+            }
+            delete prev;
+            points = nullptr;
+            size--;
+            if(points == nullptr)
+            {
+                if (other.points == nullptr)
+                {
+                    return *this;
+                }
+                size = other.size;
+                points = new LNode;
+                LNodePtr current = points;
+                LNodePtr othercurrent = other.points;
+
+                for (; othercurrent != nullptr; current = current->next)
+                {
+                    current->p = othercurrent->p;
+                    othercurrent = othercurrent->next;
+                    if (othercurrent != nullptr)
+                    {
+                        current->next = new LNode;
+                    }
+                    else
+                    {
+                        current->next = nullptr;
+                        return *this;
+                    }
+                }
+            }
+        }
     }
 
     Cluster::~Cluster()
