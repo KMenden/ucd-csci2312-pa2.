@@ -321,74 +321,47 @@ namespace Clustering {
     {
 
         PointPtr temp = new Point(rhs);
-        if (points == nullptr)
-        {
-            points = new LNode;
-            *(points->p) = rhs;
-            points->next = nullptr;
-            size++;
-        }
-        else
-        {
-            LNodePtr cursor;
-            cursor = points;
-            for(int i = 1; i < size; i++)
-            {
-                cursor = cursor->next;
-            }
-            cursor->next = new LNode;
-            cursor->next->next = nullptr;
-            cursor->next->p = temp;
-            size++;
-        }
+        add(temp);
 
         return *this;
     }
 
     Cluster& Cluster::operator-=(const Point &rhs)
     {
-        if(points->p == &rhs)
+        if(points == nullptr)
         {
-            if (points->next == nullptr)
+            return *this;
+        }
+
+        LNodePtr current = points;
+        LNodePtr prev = points;
+        for( ; current != nullptr; current = current->next)
+        {
+            if(current->p == &rhs)
             {
-                delete points;
-                --size;
-                return *this;
+                if(current == prev)
+                {
+                    points = prev->next;
+                    size--;
+                    delete current;
+                    return *this;
+                }
+                else
+                {
+                    prev->next = current->next;
+                    delete current;
+                    size--;
+                    return *this;
+                }
             }
             else
             {
-                LNodePtr tempoint;
-                tempoint = points->next;
-                delete points;
-                points = tempoint;
-                --size;
-                return *this;
-            }
-        }
-        LNodePtr cursor;
-        cursor = points;
-        int index;
-        for(int i = 1; i < size; i++)
-        {
-            cursor = cursor->next;
-            if(cursor->p == &rhs)
-            {
-                LNodePtr tempoint;
-                tempoint = cursor->next;
-                delete cursor;
-                --size;
-                index = i;
-                cursor = points;
-                for(int i = 1; i < index; i++)
+                if(current != prev)
                 {
-                    cursor = cursor->next;
+                    prev = prev->next;
                 }
-                cursor->next = tempoint;
-                return *this;
-
             }
         }
-
     }
 
     const Cluster operator+(const Cluster &lhs, const PointPtr &rhs)
@@ -404,7 +377,7 @@ namespace Clustering {
     {
         Cluster result(lhs);
 
-        result -= *rhs;
+        result.remove(rhs);
 
         return result;
     }

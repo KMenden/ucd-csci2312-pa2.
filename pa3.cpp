@@ -23,8 +23,13 @@ int main()
     c1.add(&p3);
     c1.add(&p4);
     Cluster c2(c1);
-    c2 = c1;
+    cout << c1;
     cout << c2;
+
+    if(c1 == c2)
+    {
+        cout << "Comparision operator == returned true" << endl;
+    }
     return 0;
 
 }
