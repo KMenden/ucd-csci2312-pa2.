@@ -21,15 +21,12 @@ int main()
     c1.add(&p1);
     c1.add(&p2);
     c1.add(&p3);
-    c1.add(&p4);
-    Cluster c2(c1);
-    cout << c1;
-    cout << c2;
+    Cluster c2;
+    c2.add(&p4);
+    c2.add(&p2);
+    cout << c1 << endl;
+    cout << c1 - c2;
 
-    if(c1 == c2)
-    {
-        cout << "Comparision operator == returned true" << endl;
-    }
     return 0;
 
 }

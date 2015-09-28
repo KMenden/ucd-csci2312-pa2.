@@ -313,7 +313,72 @@ namespace Clustering {
 
     Cluster& Cluster::operator+=(const Cluster &rhs)
     {
+        if(rhs.points == nullptr)
+        {
+            return *this;
+        }
 
+        LNodePtr current = points;
+        LNodePtr rhscurrent = rhs.points;
+
+        for( ; rhscurrent != nullptr; rhscurrent = rhscurrent->next)
+        {
+            bool result = false;
+            for( ; current !=nullptr; current = current->next)
+            {
+
+                if(current == nullptr)
+                {
+                    break;
+                }
+                if(current->p == rhscurrent->p)
+                {
+                    result = true;
+                    break;
+                }
+
+            }
+            if(result == false)
+            {
+                add(rhscurrent->p);
+            }
+            current = points;
+        }
+
+        return *this;
+    }
+
+    Cluster& Cluster::operator-=(const Cluster &rhs)
+    {
+        if(rhs.points == nullptr)
+        {
+            return *this;
+        }
+
+        LNodePtr current = points;
+        LNodePtr rhscurrent = rhs.points;
+
+        for( ; rhscurrent != nullptr; rhscurrent = rhscurrent->next)
+        {
+
+            for( ; current !=nullptr; current = current->next)
+            {
+
+                if(current == nullptr)
+                {
+                    break;
+                }
+                if(current->p == rhscurrent->p)
+                {
+                    remove(rhscurrent->p);
+                    break;
+                }
+
+            }
+            current = points;
+        }
+
+        return *this;
     }
 
 
@@ -385,83 +450,19 @@ namespace Clustering {
 
     const Cluster operator+(const Cluster &lhs, const Cluster &rhs)
     {
-
         Cluster result(lhs);
-        LNodePtr lhcursor;
-        LNodePtr rhcursor;
 
-        lhcursor = result.points;
-        rhcursor = rhs.points;
+        result += rhs;
 
-        if(lhcursor == nullptr)
-        {
-            lhcursor = new LNode;
-            lhcursor->p = rhcursor->p;
-            lhcursor->next = nullptr;
-            result.size++;
-            rhcursor = rhcursor->next;
-        }
-
-
-        for(int i = 0; i < rhs.size; i++)
-        {
-            for(int i = 0; i < result.size; i++)
-            {
-                if(lhcursor->next == nullptr && rhcursor != nullptr)
-                {
-                    lhcursor->next = new LNode;
-                    lhcursor->next->p = rhcursor->p;
-                    lhcursor->next->next = nullptr;
-                    result.size++;
-                    break;
-                }
-                else
-                {
-                    lhcursor = lhcursor->next;
-                }
-            }
-            if(rhcursor == nullptr)
-            {
-                return result;
-            }
-            else
-            {
-                rhcursor = rhcursor->next;
-            }
-        }
+        return result;
     }
 
     const Cluster operator-(const Cluster &lhs, const Cluster &rhs)
     {
         Cluster result(lhs);
-        LNodePtr lhcursor;
-        LNodePtr rhcursor;
+        result -= rhs;
 
-        lhcursor = result.points;
-        rhcursor = rhs.points;
-
-        for(int i = 0; i < rhs.size; i++)
-        {
-            if(lhcursor->p == rhcursor->p)
-            {
-                if (lhcursor->next == nullptr)
-                {
-                    delete lhcursor;
-                    --result.size;
-                    lhcursor = result.points;
-                }
-                else
-                {
-                    LNodePtr tempoint;
-                    tempoint = lhcursor->next;
-                    delete lhcursor;
-                    lhcursor = tempoint;
-
-
-                }
-            }
-        }
-
+        return result;
     }
 
 }
