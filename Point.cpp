@@ -1,6 +1,7 @@
 #include "Point.h"
 #include <cmath>
 #include <cassert>
+#include <iomanip>
 
 using namespace std;
 using namespace Clustering;
@@ -60,6 +61,11 @@ double Point::getValue(int index) const
 
 }
 
+
+void Point::setValue(int index, double value)
+{
+    coords[index] = value;
+}
 
  Point& Point::operator=(const Point &rhs)
  {
@@ -285,15 +291,12 @@ namespace Clustering {
 
     std::ostream &operator<<(std::ostream &output, const Point &point)
     {
-        output << "(";
+
         for (int i = 0; i < point.getDims(); i++) {
 
             output << point.coords[i] << ", ";
 
         }
-
-        output << ")";
-
 
         return output;
 
@@ -301,12 +304,20 @@ namespace Clustering {
 
     std::istream &operator>>(std::istream &input, Point &point)
     {
-        for (int i = 0; i < point.dim; i++)
-        {
-            cout << "Please enter the " << i + 1 << " coordinate" << endl;
-            input >> point.coords[i];
 
+        string value;
+        double d;
+        int i = 0;
+
+        while (getline(input, value, ',')) {
+            d = stod(value);
+
+            cout << "Value: " << d << endl;
+
+            point.setValue(i++, d);
         }
+
+
         return input;
     }
 

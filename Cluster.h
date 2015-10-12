@@ -19,9 +19,14 @@ namespace Clustering {
     class Cluster {
         int size;
         LNodePtr points;
+        bool __release_points;
+        unsigned int __id;
+        static unsigned int __idGenerator;
+        Point __centroid;
+        bool __centroidvalidity;
 
     public:
-        Cluster() : size(0), points(nullptr) {};
+        Cluster() : size(0), points(nullptr), __id(1), __centroid(5), __centroidvalidity(false) {};
 
         // The big three: cpy ctor, overloaded operator=, dtor
         Cluster(const Cluster &);
@@ -57,6 +62,15 @@ namespace Clustering {
         friend const Cluster operator+(const Cluster &lhs, const PointPtr &rhs);
         friend const Cluster operator-(const Cluster &lhs, const PointPtr &rhs);
 
+        unsigned int getid()const;
+
+        int getsize();
+
+        void setcentroid(const Point &);
+
+        const Point getcentroid();
+
+        void computecentroid();
     };
 
 }

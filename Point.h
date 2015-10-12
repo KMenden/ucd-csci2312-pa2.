@@ -61,6 +61,7 @@ namespace Clustering {
 
         // Mutator methods
         double getValue(int) const;
+        void setValue(int, double);
 
         // Accessor methods
         int getDims() const { return dim; }

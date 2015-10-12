@@ -1,7 +1,10 @@
 #include "Cluster.h"
-
+#include <iostream>
+#include <string>
+#include <sstream>
 
 using namespace Clustering;
+using namespace std;
 
 namespace Clustering {
 
@@ -30,6 +33,7 @@ namespace Clustering {
                 return;
             }
         }
+        __id = 1;
     }
 
     Cluster& Cluster::operator=(const Cluster &other)
@@ -258,7 +262,7 @@ namespace Clustering {
             os << "The list is empty" << std::endl;
         }
         else {
-            os << *(ctemp.points->p) << std::endl;
+            os << *(ctemp.points->p) << ": " << ctemp.getid() << std::endl;
             if (ctemp.points->next == nullptr)
             {
                 return os;
@@ -269,13 +273,42 @@ namespace Clustering {
                 cursor = ctemp.points;
                 do
                 {
-                    os << *(cursor->next->p) << std::endl;
+                    os << *(cursor->next->p) << ": " << ctemp.getid() << std::endl;
                     cursor = cursor->next;
 
                 }while(cursor->next != nullptr);
                 return os;
             }
         }
+    }
+
+    std::istream &operator>>(std::istream &is, Cluster &ctemp)
+    {
+        string line;
+        while(getline(is, line))
+        {
+            cout << "Line: " << line << endl;
+
+            int pointdims = 0;
+            stringstream pointdim(line);
+            double temp;
+            stringstream linestream(line);
+            string value;
+            double d;
+
+//            while(getline(pointdim, temp, ','))
+//            {
+//                pointdims++;
+//            }
+//            pointdims++;
+
+            PointPtr p = new Point(5);
+
+            linestream >> *p;
+
+            ctemp.add(p);
+        }
+
     }
 
     bool operator==(const Cluster &lhs, const Cluster &rhs)
@@ -465,4 +498,36 @@ namespace Clustering {
         return result;
     }
 
+   unsigned int Cluster::getid()const {
+        return __id;
+    }
+
+    int Cluster::getsize()
+    {
+        return size;
+    }
+
+    void Cluster::setcentroid(const Point &point)
+    {
+            __centroid = point;
+        return;
+    }
+
+    const Point Cluster::getcentroid()
+    {
+        return __centroid;
+    }
+
+    void Cluster::computecentroid()
+    {
+        LNodePtr np = points;
+        Point p(5);
+        while(np != nullptr)
+        {
+            p += *np->p / 5;
+            np = np->next;
+        }
+        __centroid = p;
+        __centroidvalidity = true;
+    }
 }

@@ -1,32 +1,45 @@
 #include "Point.h"
 #include "Cluster.h"
 #include <cassert>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 
 using namespace Clustering;
 using namespace std;
 
 
-int main()
-{
-    double testarray[5] = {4,3,6,8,5};
-    double testarray2[5] = {5,2,8,3,9};
-    double testarray3[5] = {8,2,1,5,7};
-    Point p1(5);
-    Point p5(5);
-    Point p2(5, testarray);
-    Point p3(5, testarray2);
-    Point p4(5, testarray3);
-
+int main() {
+    string line;
+    ifstream csv("points.txt");
+    Point p(5);
+    double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
+    Point p2(5, temparray);
     Cluster c1;
-    c1.add(&p1);
-    c1.add(&p2);
-    c1.add(&p3);
-    Cluster c2;
-    c2.add(&p4);
-    c2.add(&p2);
-    cout << c1 << endl;
-    cout << c1 - c2;
 
+    c1.setcentroid(p2);
+    cout << c1.getcentroid() << endl << endl;
+
+    if (csv.is_open())
+    {
+        csv >> c1;
+
+    }
+    else
+    {
+        cout << "Error, opening failed" << endl;
+    }
+    csv.close();
+
+
+
+    cout << "The size of the cluster is " << c1.getsize() << endl;
+
+    cout << c1 << endl << endl;
+
+    c1.computecentroid();
+    cout << c1.getcentroid();
     return 0;
 
 }
