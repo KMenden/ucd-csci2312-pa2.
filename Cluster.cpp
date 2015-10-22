@@ -166,6 +166,20 @@ namespace Clustering {
         }
     }
 
+
+    Cluster::Move::Move(const PointPtr &point, Cluster *cfrom, Cluster *cto)
+    {
+        ptr = point;
+        from = cfrom;
+        to = cto;
+    }
+
+
+    void Cluster::Move::perform()
+    {
+        to->add(from->remove(ptr));
+    }
+
     void Cluster::add(const PointPtr &point) {
         if (points == nullptr)
         {
@@ -530,4 +544,19 @@ namespace Clustering {
         __centroid = p;
         __centroidvalidity = true;
     }
+
+
+    void Cluster::pickPoints(int k, Point pointarray[])
+    {
+        LNodePtr current = points;
+        int index = 0;
+
+        while(current != nullptr)
+        {
+            pointarray[index] = *(current->p);
+            current = current->next;
+            index++;
+        }
+    }
+
 }

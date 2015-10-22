@@ -11,35 +11,71 @@ using namespace std;
 
 
 int main() {
+    int k = 3;
     string line;
     ifstream csv("points.txt");
     Point p(5);
     double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
-    Point p2(5, temparray);
+    double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
+    double temparray3[5] = {22.0,65.1,12.87,103.0,3.2};
+    PointPtr p2 = new Point(5, temparray);
     Cluster c1;
+    Cluster c2;
+    PointPtr p3(p2);
+    PointPtr p4 = new Point(5, temparray2);
+    PointPtr p5 = new Point(5, temparray3);
 
-    c1.setcentroid(p2);
-    cout << c1.getcentroid() << endl << endl;
+    c1.add(p2);
+    c1.add(p3);
+    c1.add(p4);
+    c1.add(p5);
+    cout << c1;
 
-    if (csv.is_open())
+    Point pointarray[k];
+
+    c1.pickPoints(k, pointarray);
+
+    for(int i = 0; i< k; i++)
     {
-        csv >> c1;
-
+        cout << pointarray[i];
     }
-    else
-    {
-        cout << "Error, opening failed" << endl;
-    }
-    csv.close();
 
 
 
-    cout << "The size of the cluster is " << c1.getsize() << endl;
 
-    cout << c1 << endl << endl;
+//    Cluster::Move c1toc2(p3,&c1,&c2);
+//
+//    c1toc2.perform();
+//
+//    cout << c1 << endl << endl;
+//    cout << c2 << endl;
 
-    c1.computecentroid();
-    cout << c1.getcentroid();
+
+
+
+
+//    c1.setcentroid(p2);
+//    cout << c1.getcentroid() << endl << endl;
+//
+//    if (csv.is_open())
+//    {
+//        csv >> c1;
+//
+//    }
+//    else
+//    {
+//        cout << "Error, opening failed" << endl;
+//    }
+//    csv.close();
+//
+//
+//
+//    cout << "The size of the cluster is " << c1.getsize() << endl;
+//
+//    cout << c1 << endl << endl;
+//
+//    c1.computecentroid();
+//    cout << c1.getcentroid();
     return 0;
 
 }

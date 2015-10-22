@@ -72,6 +72,8 @@ void Point::setValue(int index, double value)
      if(this == &rhs)
          return *this;
 
+     dim = rhs.dim;
+
      for(int i = 0; i < dim; i++)
      {
 

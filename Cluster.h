@@ -16,6 +16,8 @@ namespace Clustering {
         LNodePtr next;
     };
 
+
+
     class Cluster {
         int size;
         LNodePtr points;
@@ -32,6 +34,14 @@ namespace Clustering {
         Cluster(const Cluster &);
         Cluster &operator=(const Cluster &);
         ~Cluster();
+
+        class Move{
+            PointPtr ptr;
+            Cluster *to, *from;
+        public:
+            void perform();
+            Move(const PointPtr &, Cluster *, Cluster *);
+        };
 
         // Set functions: They allow calling c1.add(c2.remove(p));
         void add(const PointPtr &);
@@ -71,7 +81,12 @@ namespace Clustering {
         const Point getcentroid();
 
         void computecentroid();
+
+        void pickPoints(int, Point []);
+
     };
+
+
 
 }
 #endif //CLUSTERING_CLUSTER_H
