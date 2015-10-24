@@ -512,6 +512,13 @@ namespace Clustering {
         return result;
     }
 
+    unsigned int Cluster::generateid()
+    {
+        static unsigned int tempid = 0;
+        tempid++;
+        return tempid;
+    }
+
    unsigned int Cluster::getid()const {
         return __id;
     }
@@ -551,12 +558,67 @@ namespace Clustering {
         LNodePtr current = points;
         int index = 0;
 
-        while(current != nullptr)
+        while(current != nullptr && index < k)
         {
             pointarray[index] = *(current->p);
             current = current->next;
             index++;
         }
     }
+
+
+    double Cluster::intraClusterDistance() const
+    {
+        LNodePtr firstpoint = points;
+        LNodePtr secondpoint = points;
+        double distance;
+        double sum;
+
+        while(firstpoint != nullptr)
+        {
+            while(secondpoint != nullptr)
+            {
+              distance = firstpoint->p->distanceTo(*(secondpoint->p));
+                sum += distance;
+                secondpoint = secondpoint->next;
+            }
+            secondpoint = points;
+            firstpoint = firstpoint->next;
+        }
+        sum /= 2;
+        return sum;
+
+    }
+
+    double interClusterDistance(const Cluster &c1, const Cluster &c2)
+    {
+        LNodePtr c1current = c1.points;
+         LNodePtr c2current = c2.points;
+        double distance;
+        double sum;
+
+        while(c1current != nullptr)
+        {
+            while(c2current != nullptr)
+            {
+                distance = c1current->p->distanceTo(*(c2current->p));
+                sum += distance;
+                c2current = c2current->next;
+            }
+            c2current = c2.points;
+            c1current = c1current->next;
+        }
+        return sum;
+    }
+
+    int Cluster::getClusterEdges()
+    {
+        int edges = 0;
+
+        edges = (size *(size - 1)) / 2;
+
+        return edges;
+    }
+
 
 }

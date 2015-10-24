@@ -29,16 +29,21 @@ int main() {
     c1.add(p3);
     c1.add(p4);
     c1.add(p5);
-    cout << c1;
+    cout << c1 << endl;
+    cout << c2 << endl;
 
-    Point pointarray[k];
+    cout << c1.getClusterEdges();
 
-    c1.pickPoints(k, pointarray);
+//    cout << c1;
 
-    for(int i = 0; i< k; i++)
-    {
-        cout << pointarray[i];
-    }
+//    Point pointarray[k];
+//
+//    c1.pickPoints(k, pointarray);
+//
+//    for(int i = 0; i< k; i++)
+//    {
+//        cout << pointarray[i];
+//    }
 
 
 

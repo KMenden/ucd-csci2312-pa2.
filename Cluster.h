@@ -26,10 +26,11 @@ namespace Clustering {
         static unsigned int __idGenerator;
         Point __centroid;
         bool __centroidvalidity;
+        unsigned int pointdimensions;
 
     public:
-        Cluster() : size(0), points(nullptr), __id(1), __centroid(5), __centroidvalidity(false) {};
-
+        Cluster() : size(0), points(nullptr), __id(generateid()), __centroid(pointdimensions = 5), __centroidvalidity(false) {};
+        Cluster(unsigned int dimensions) : size(0), points(nullptr), __id(generateid()), pointdimensions(dimensions), __centroid(pointdimensions = 5), __centroidvalidity(false) {};
         // The big three: cpy ctor, overloaded operator=, dtor
         Cluster(const Cluster &);
         Cluster &operator=(const Cluster &);
@@ -72,6 +73,7 @@ namespace Clustering {
         friend const Cluster operator+(const Cluster &lhs, const PointPtr &rhs);
         friend const Cluster operator-(const Cluster &lhs, const PointPtr &rhs);
 
+        static unsigned int generateid();
         unsigned int getid()const;
 
         int getsize();
@@ -83,6 +85,12 @@ namespace Clustering {
         void computecentroid();
 
         void pickPoints(int, Point []);
+
+        double intraClusterDistance() const;
+
+        friend double interClusterDistance(const Cluster &c1, const Cluster &c2);
+
+        int getClusterEdges();
 
     };
 
