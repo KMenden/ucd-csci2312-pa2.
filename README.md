@@ -13,27 +13,37 @@ The Cluster class is a class that works with a number of point objects and thus,
 
 ## KMeans
 The KMeans class is for KMeans clustering and is capable of reading a file containing point coordinates and clustering them within a point space. In order to utilize the KMeans class you must first include the KMeans class (#include "KMeans.h") and then to create a KMeans object using three parameters for it's constructor (KMeans test(2, 4, "points.txt") for example). The first and second parameters are the value of K and the point dimensions, the K value is the number of clusters you wish to use in your KMeans clustering while the point dimensions value is the number of coordinates (Or dimensions) your points will take up. Should you attmpt to use near, or more, clusters than your number of points then you will end up with a number of empty clusters, this is normal and is a side effect of how KMeans clusters works with your data for optimal results.
-
+---
 !!IMPORTANT!!
+---
 It is VERY important that all your points take on the same dimensions! You cannot have an X,Y,Z and an X,Y point within the same clustering point space! Should your data contain a point that does not have the correct number of dimensions, it will be discarded and the algorithm will move to the next point.
+---
 !!IMPORTANT!!
-
+---
 The third and final parameter is a string containing the name of your text file that contains your points, your file should be located in the same folder that the KMeans, Cluster, and Point files are located since this is where the program will look for your data. The clustering program will cluster your points to the most optimized locations it can find. After doing this, the KMeans program will write out the results to a "results.txt" file and onto your console's screen. The points within your file should be written as such
-
+---
 11.4,2.2,4.7,8.22
+---
 3.67,6,56,89.3,23
-
+---
+---
 Note how each point is on it's own line and each coordinate is separated by commas, this is very important and your file should not deviate from this format, also be warned to NOT include a comma at the very end of a line, it will cause the algorithm to not read in legitimate points and worse, it can cause an invalid point to be read into the clustering space causing undefined behavior. After creating your KMeans object with the correct parameters you then call it's start() function (test.start() for example) to begin the clustering algorithm, this function will perform all the necessary set up and execution of your data so long as you provide the correct format and information when you create the object.
-
+---
 After completing it's clustering algorithm the program will print out each point and which cluster that point belongs to, the results will not only be printed to your screen but will be written out to the "results.txt" file located in the same place as you input file. The format for this output is as follows
-
+---
 0, 23.2, 12, 5.6, 14.2, : 1
+---
 1.3, 4.3, 0, 5.6, 7.9, : 2
+---
 4.1, 5.6, 5, 1.6, 7.9, : 2
+---
 0.1, 2.3, 5.4, 22, 11.2, : 3
+---
 2.3, 5.6, 0, 5.6, 7.9, : 3
+---
 2.4, 5.6, 0, 6.6, 7.1, : 3
-
+---
+---
 Where the number after the colon is the ID of which ever cluster that point belongs too.
 
 ##Compiler
