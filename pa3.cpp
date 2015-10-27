@@ -1,5 +1,6 @@
 #include "Point.h"
 #include "Cluster.h"
+#include "KMeans.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -11,28 +12,46 @@ using namespace std;
 
 
 int main() {
-    int k = 3;
-    string line;
-    ifstream csv("points.txt");
-    Point p(5);
-    double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
-    double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
-    double temparray3[5] = {22.0,65.1,12.87,103.0,3.2};
-    PointPtr p2 = new Point(5, temparray);
-    Cluster c1;
-    Cluster c2;
-    PointPtr p3(p2);
-    PointPtr p4 = new Point(5, temparray2);
-    PointPtr p5 = new Point(5, temparray3);
+//    int k = 3;
+//    string line;
+//    ifstream csv("points.txt");
+//    Point p(5);
+//    double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
+//    double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
+//    double temparray3[5] = {22.0,65.1,12.87,103.0,3.2};
+//    PointPtr p2 = new Point(5, temparray);
+//    Cluster c1(5);
+//    Cluster c2(5);
+//    PointPtr p3(p2);
+//    PointPtr p4 = new Point(5, temparray2);
+//    PointPtr p5 = new Point(5, temparray3);
 
-    c1.add(p2);
-    c1.add(p3);
-    c1.add(p4);
-    c1.add(p5);
-    cout << c1 << endl;
-    cout << c2 << endl;
+    KMeans test(3, 5, "points.txt");
+    test.start();
 
-    cout << c1.getClusterEdges();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    c1.add(p2);
+//    c1.add(p3);
+//    c1.add(p4);
+//    c1.add(p5);
+//    cout << c1 << endl;
+//    cout << c2 << endl;
+
 
 //    cout << c1;
 

@@ -2,6 +2,7 @@
 #define CLUSTERING_CLUSTER_H
 
 #include "Point.h"
+#include <vector>
 
 namespace Clustering {
 
@@ -30,7 +31,7 @@ namespace Clustering {
 
     public:
         Cluster() : size(0), points(nullptr), __id(generateid()), __centroid(pointdimensions = 5), __centroidvalidity(false) {};
-        Cluster(unsigned int dimensions) : size(0), points(nullptr), __id(generateid()), pointdimensions(dimensions), __centroid(pointdimensions = 5), __centroidvalidity(false) {};
+        Cluster(unsigned int dimensions) : size(0), points(nullptr), __id(generateid()), pointdimensions(dimensions), __centroid(dimensions), __centroidvalidity(false) {};
         // The big three: cpy ctor, overloaded operator=, dtor
         Cluster(const Cluster &);
         Cluster &operator=(const Cluster &);
@@ -84,13 +85,21 @@ namespace Clustering {
 
         void computecentroid();
 
-        void pickPoints(int, Point []);
+        void pickPoints(int, std::vector<Point>&);
 
         double intraClusterDistance() const;
 
         friend double interClusterDistance(const Cluster &c1, const Cluster &c2);
 
         int getClusterEdges();
+
+        friend double interClusterEdges(const Cluster &c1, const Cluster &c2);
+
+        void setPointDemensions(unsigned int);
+
+        LNodePtr getheadpointer() { return points; }
+
+        bool checkValidCentroid() {return __centroidvalidity;}
 
     };
 

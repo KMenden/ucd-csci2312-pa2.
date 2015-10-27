@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
+#include <algorithm>
 
 using namespace Clustering;
 using namespace std;
@@ -178,6 +180,8 @@ namespace Clustering {
     void Cluster::Move::perform()
     {
         to->add(from->remove(ptr));
+        to->__centroidvalidity = false;
+        from->__centroidvalidity = false;
     }
 
     void Cluster::add(const PointPtr &point) {
@@ -309,18 +313,23 @@ namespace Clustering {
             stringstream linestream(line);
             string value;
             double d;
+            long int countDelim;
 
-//            while(getline(pointdim, temp, ','))
-//            {
-//                pointdims++;
-//            }
-//            pointdims++;
+            countDelim = count(line.begin(), line.end(), ',') + 1;
 
-            PointPtr p = new Point(5);
+            if(countDelim == ctemp.pointdimensions)
+            {
+                PointPtr p = new Point(ctemp.pointdimensions);
 
-            linestream >> *p;
+                linestream >> *p;
 
-            ctemp.add(p);
+                ctemp.add(p);
+            }
+            else
+            {
+                cerr << "ERROR: Point " << line << " does not contain the number of dimensions as specified at KMeans object creation!" << endl;
+                cerr << "Point " << line << " was skipped and not added to the clustering algorithm" << endl;
+            }
         }
 
     }
@@ -553,15 +562,16 @@ namespace Clustering {
     }
 
 
-    void Cluster::pickPoints(int k, Point pointarray[])
+    void Cluster::pickPoints(int k, vector<Point> &pointarray)
     {
         LNodePtr current = points;
         int index = 0;
 
-        while(current != nullptr && index < k)
+        while(current != nullptr && current->next != nullptr && index < k)
         {
+
             pointarray[index] = *(current->p);
-            current = current->next;
+            current = current->next->next;
             index++;
         }
     }
@@ -620,5 +630,18 @@ namespace Clustering {
         return edges;
     }
 
+    double interClusterEdges(const Cluster &c1, const Cluster &c2)
+    {
+        int edges = 0;
+
+        edges = c1.size * c2.size;
+
+        return edges;
+    }
+
+    void Cluster::setPointDemensions(unsigned int value)
+    {
+        pointdimensions = value;
+    }
 
 }

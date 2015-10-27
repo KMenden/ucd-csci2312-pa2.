@@ -311,7 +311,7 @@ namespace Clustering {
         double d;
         int i = 0;
 
-        while (getline(input, value, ',')) {
+        while (getline(input, value, point.POINT_VALUE_DELIM)) {
             d = stod(value);
 
             cout << "Value: " << d << endl;
@@ -343,8 +343,9 @@ double Point::distanceTo(Point &point1)
     for(int i = 0; i < dim; i++)
     {
         difference = (pow(coords[i] - point1.coords[i], 2));
+        sum += difference;
     }
-    sum += difference;
+
     sqrt(sum);
 
   return sum;
