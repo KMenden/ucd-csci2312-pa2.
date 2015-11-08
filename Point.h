@@ -4,13 +4,15 @@
 #ifndef __point_h
 #define __point_h
 #include <iostream>
+#include <vector>
 
 
 namespace Clustering {
     class Point {
         int dim;
-        double *coords;
+        std::vector<double> coords;
         static constexpr char POINT_VALUE_DELIM = ',';
+        unsigned int __id;
 
     public:
         // Constructors
@@ -68,6 +70,9 @@ namespace Clustering {
         int getDims() const { return dim; }
 
         double distanceTo(Point &point1);
+
+        static unsigned int generateid();
+        unsigned int getid()const;
 
 
     };

@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cassert>
 #include <iomanip>
+#include "Exceptions.h"
+#include <algorithm>
 
 using namespace std;
 using namespace Clustering;
@@ -19,21 +21,21 @@ Point::Point(int numofdemensions)
 {
 
        dim = numofdemensions;
-      coords = new double[dim];
+
     for (int i = 0; i < dim; i++)
     {
-        coords[i] = 0;
+        coords.push_back(0);
     }
 }
 
 Point::Point(int numofdemensions, double *array)
 {
     dim = numofdemensions;
-    coords = new double[dim];
+
 
     for (int i = 0; i < dim; i++)
     {
-        coords[i] = array[i];
+        coords.push_back(array[i]);
     }
 
 }
@@ -41,10 +43,14 @@ Point::Point(int numofdemensions, double *array)
 Point::Point(const Point &temp)
     {
         dim = temp.dim;
-        coords = new double[dim];
+
+        vector<double>::iterator thisit = coords.begin();
+        vector<double>::const_iterator tempit = temp.coords.begin();
+
         for (int i = 0; i < dim; i++)
         {
-            coords[i] = temp.coords[i];
+            coords.push_back(*tempit);
+            tempit++;
         }
     }
 
@@ -52,7 +58,7 @@ Point::Point(const Point &temp)
 //Releases the memory occupied by the coords pointer
 Point::~Point()
 {
-  delete[] coords;
+  coords.clear();
 }
 
 double Point::getValue(int index) const
@@ -72,14 +78,27 @@ void Point::setValue(int index, double value)
      if(this == &rhs)
          return *this;
 
-     dim = rhs.dim;
+     try {
 
-     for(int i = 0; i < dim; i++)
-     {
+         if(dim != rhs.dim)
+             throw DimensionalityMismatchEx(dim, "DimensionalityMismatchEx");
 
-         coords[i] = rhs.coords[i];
+         vector<double>::iterator thisit = coords.begin();
+         vector<double>::const_iterator tempit = rhs.coords.begin();
+         dim = rhs.dim;
+
+         for (int i = 0; i < dim; i++) {
+
+             *thisit = *tempit;
+             thisit++;
+             tempit++;
+         }
      }
-
+     catch(DimensionalityMismatchEx e)
+     {
+         cerr << "ERROR:Exception " << e.getName() << " detected with assignment operator = with point " << *this << "and " << rhs << endl;
+         cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+     }
      return *this;
  }
 
@@ -88,15 +107,33 @@ namespace Clustering {
     bool operator==(const Point &lhs, const Point &rhs) {
         bool result;
 
-        for (int i = 0; i < lhs.getDims(); i++) {
-            if (lhs.coords[i] == rhs.coords[i])
-                result = true;
-            else {
-                result = false;
-                return result;
-            }
+        if(lhs.__id != rhs.__id)
+        {
+            return false;
         }
 
+        try {
+            if(lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+
+            vector<double>::const_iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+            for (int i = 0; i < lhs.getDims(); i++) {
+                if (*thisit == *tempit )
+                    result = true;
+                else {
+                    result = false;
+                    return result;
+                }
+                thisit++;
+                tempit++;
+            }
+        }
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator == with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+        }
         return result;
     }
 
@@ -104,101 +141,192 @@ namespace Clustering {
     bool operator!=(const Point &lhs, const Point &rhs) {
         bool result;
 
-        for (int i = 0; i < lhs.getDims(); i++) {
-            if (lhs.coords[i] == rhs.coords[i])
-                result = false;
-            else {
-                result = true;
-                return result;
+        try {
+            if(lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+
+            vector<double>::const_iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+            for (int i = 0; i < lhs.getDims(); i++) {
+                if (*thisit == *tempit)
+                    result = false;
+                else {
+                    result = true;
+                    return result;
+                }
+                thisit++;
+                tempit++;
             }
         }
-
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator != with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+        }
         return result;
     }
 
     bool operator<(const Point &lhs, const Point &rhs) {
         int index = 0;
+        vector<double>::const_iterator thisit = lhs.coords.begin();
+        vector<double>::const_iterator tempit = rhs.coords.begin();
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+            for (int i = 0; i < lhs.getDims(); i++) {
+                if (*thisit == *tempit) {
+                    index++;
+                    thisit++;
+                    tempit++;
+                }
+                else
+                    break;
+            }
 
-        for (int i = 0; i < lhs.getDims(); i++) {
-            if (lhs.coords[i] == rhs.coords[i])
-                index++;
+            if (lhs.coords[index] < rhs.coords[index])
+                return true;
             else
-                break;
-        }
+                return false;
 
-        if (lhs.coords[index] < rhs.coords[index])
-            return true;
-        else
+        }
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator < with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
             return false;
+        }
     }
 
     bool operator>(const Point &lhs, const Point &rhs) {
         int index = 0;
+        vector<double>::const_iterator thisit = lhs.coords.begin();
+        vector<double>::const_iterator tempit = rhs.coords.begin();
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
 
-        for (int i = 0; i < lhs.getDims(); i++) {
-            if (lhs.coords[i] == rhs.coords[i])
-                index++;
+            for (int i = 0; i < lhs.getDims(); i++) {
+                if (*thisit == *tempit) {
+                    tempit++;
+                    thisit++;
+                    index++;
+                }
+                else
+                    break;
+            }
+
+            if (*thisit > *tempit)
+                return true;
             else
-                break;
+                return false;
         }
-
-        if (lhs.coords[index] > rhs.coords[index])
-            return true;
-        else
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator > with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
             return false;
+        }
     }
 
     bool operator<=(const Point &lhs, const Point &rhs) {
         int index = 0;
         bool same;
-        for (int i = 0; i < lhs.getDims(); i++) {
-            if (lhs.coords[i] == rhs.coords[i]) {
-                index++;
-                same = true;
+
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+
+            vector<double>::const_iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+            for (int i = 0; i < lhs.getDims(); i++) {
+                if (*thisit == *tempit) {
+                    index++;
+                    thisit++;
+                    tempit++;
+                    same = true;
+                }
+                else
+                    same = false;
+                break;
             }
-            else
-                same = false;
-            break;
-        }
-        if (same == true)
-            return true;
-        else {
-            if (lhs.coords[index] < rhs.coords[index])
+            if (same == true)
                 return true;
-            else
-                return false;
+            else {
+                if (*thisit < *tempit)
+                    return true;
+                else
+                    return false;
+            }
+        }
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator <= with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+            return false;
         }
     }
 
     bool operator>=(const Point &lhs, const Point &rhs) {
         int index = 0;
         bool same;
-        for (int i = 0; i < lhs.getDims(); i++) {
-            if (lhs.coords[i] == rhs.coords[i]) {
-                index++;
-                same = true;
+
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+
+            vector<double>::const_iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+
+            for (int i = 0; i < lhs.getDims(); i++) {
+                if (*thisit == *tempit) {
+                    thisit++;
+                    tempit++;
+                    index++;
+                    same = true;
+                }
+                else
+                    same = false;
+                break;
             }
-            else
-                same = false;
-            break;
-        }
-        if (same == true)
-            return true;
-        else {
-            if (lhs.coords[index] > rhs.coords[index])
+            if (same == true)
                 return true;
-            else
-                return false;
+            else {
+                if (*thisit > *tempit)
+                    return true;
+                else
+                    return false;
+            }
+        }
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator >= with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+            return false;
         }
     }
 
     Point &operator+=(Point &lhs, const Point &rhs)
     {
-        for(int i = 0; i < lhs.dim; i++)
-        {
-            lhs.coords[i] += rhs.coords[i];
-        }
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
 
+            vector<double>::iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+
+            for (int i = 0; i < lhs.dim; i++) {
+                *thisit += *tempit;
+                thisit++;
+                tempit++;
+            }
+
+        }
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator += with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+
+        }
         return lhs;
 
     }
@@ -206,11 +334,24 @@ namespace Clustering {
 
     Point &operator-=(Point &lhs, const Point &rhs)
     {
-        for(int i = 0; i < lhs.dim; i++)
-        {
-            lhs.coords[i] -= rhs.coords[i];
-        }
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
 
+            vector<double>::iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+
+            for (int i = 0; i < lhs.dim; i++) {
+                lhs.coords[i] -= rhs.coords[i];
+                thisit++;
+                tempit++;
+            }
+        }
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator -= with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+        }
         return lhs;
 
     }
@@ -218,37 +359,79 @@ namespace Clustering {
 
     const Point operator+(const Point &lhs, const Point &rhs)
     {
-        Point result(lhs.dim);
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
 
-        for(int i = 0; i < lhs.dim; i++)
-        {
-           result.coords[i] = lhs.coords[i] + rhs.coords[i];
+            Point result(lhs.dim);
+
+            vector<double>::const_iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+            vector<double>::iterator resultit = result.coords.begin();
+
+
+            for (int i = 0; i < lhs.dim; i++) {
+                *resultit = *thisit + *tempit;
+                thisit++;
+                tempit++;
+                resultit++;
+            }
+
+            return result;
         }
-
-        return result;
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator + with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+            Point result(lhs.dim);
+            return result;
+        }
 
 
     }
 
     const Point operator-(const Point &lhs, const Point &rhs)
     {
-        Point result(lhs.dim);
+        try {
+            if (lhs.dim != rhs.dim)
+                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
 
-        for(int i = 0; i < lhs.dim; i++)
-        {
-            result.coords[i] = lhs.coords[i] - rhs.coords[i];
+            Point result(lhs.dim);
+
+            vector<double>::const_iterator thisit = lhs.coords.begin();
+            vector<double>::const_iterator tempit = rhs.coords.begin();
+            vector<double>::iterator resultit = result.coords.begin();
+
+            for(int i = 0; i < lhs.dim; i++)
+            {
+                *resultit = *thisit - *tempit;
+                thisit++;
+                tempit++;
+                resultit++;
+            }
+
+            return result;
+
+
         }
-
-        return result;
-
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator - with point " << lhs << "and " << rhs << endl;
+            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
+            Point result(lhs.dim);
+            return result;
+        }
 
     }
 
     Point &Point::operator*=(double number)
     {
+        vector<double>::iterator thisit = coords.begin();
+
         for(int i = 0; i < dim; i++)
         {
-            coords[i] *= number;
+            *thisit *= number;
+            thisit++;
         }
 
         return *this;
@@ -258,9 +441,12 @@ namespace Clustering {
     {
         assert( number != 0);
 
+        vector<double>::iterator thisit = coords.begin();
+
         for(int i = 0; i < dim; i++)
         {
-            coords[i] /= number;
+            *thisit /= number;
+            thisit++;
         }
 
     }
@@ -269,9 +455,14 @@ namespace Clustering {
     {
         Point result(dim);
 
+        vector<double>::const_iterator thisit = coords.begin();
+        vector<double>::iterator resultit = result.coords.begin();
+
         for(int i = 0; i < dim; i++)
         {
-            result.coords[i] = coords[i] * number;
+            *resultit = *thisit * number;
+            resultit++;
+            thisit++;
         }
 
         return result;
@@ -282,9 +473,13 @@ namespace Clustering {
     {
         Point result(dim);
 
+        vector<double>::const_iterator thisit = coords.begin();
+        vector<double>::iterator resultit = result.coords.begin();
         for(int i = 0; i < dim; i++)
         {
-            result.coords[i] = coords[i] / number;
+            *resultit = *thisit / number;
+            resultit++;
+            thisit++;
         }
 
         return result;
@@ -294,9 +489,11 @@ namespace Clustering {
     std::ostream &operator<<(std::ostream &output, const Point &point)
     {
 
+        vector<double>::const_iterator thisit = point.coords.begin();
         for (int i = 0; i < point.getDims(); i++) {
 
-            output << point.coords[i] << ", ";
+            output << *thisit << ", ";
+            thisit++;
 
         }
 
@@ -310,15 +507,30 @@ namespace Clustering {
         string value;
         double d;
         int i = 0;
+        int countDelim;
+        string pointline;
 
-        while (getline(input, value, point.POINT_VALUE_DELIM)) {
-            d = stod(value);
+        getline(input,pointline);
 
-            cout << "Value: " << d << endl;
+        countDelim = count(pointline.begin(), pointline.end(), ',') + 1;
 
-            point.setValue(i++, d);
+        try {
+            if (point.dim != countDelim)
+                throw DimensionalityMismatchEx(point.dim, "DimensionalityMismatchEx");
+
+            while (getline(input, value, point.POINT_VALUE_DELIM)) {
+                d = stod(value);
+
+                cout << "Value: " << d << endl;
+
+                point.setValue(i++, d);
+            }
         }
-
+        catch(DimensionalityMismatchEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with extraction operator using point " << point << endl;
+            cerr << "Point dimensionality (" << point.dim << ") is mismatched with number of inputs (" << countDelim << ")" << endl;
+        }
 
         return input;
     }
@@ -337,13 +549,18 @@ namespace Clustering {
 
 double Point::distanceTo(Point &point1)
 {
+    vector<double>::const_iterator thisit = coords.begin();
+    vector<double>::const_iterator pointit = point1.coords.begin();
+
     assert(dim == point1.dim);
     double sum = 0;
     double difference = 0;
     for(int i = 0; i < dim; i++)
     {
-        difference = (pow(coords[i] - point1.coords[i], 2));
+        difference = (pow(*thisit - *pointit, 2));
         sum += difference;
+        thisit++;
+        pointit++;
     }
 
     sqrt(sum);

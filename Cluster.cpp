@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include "Exceptions.h"
 
 using namespace Clustering;
 using namespace std;
@@ -238,8 +239,16 @@ namespace Clustering {
 
     const PointPtr& Cluster::remove(const PointPtr &point)
     {
-        if(points == nullptr)
+        try
         {
+            if (points == nullptr) {
+                throw RemoveFromEmptyEx(point, "RemoveFromEmptyEx");
+            }
+        }
+        catch(RemoveFromEmptyEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with cluster remove function" << endl;
+            cerr << "Cluster #" << __id << " is already empty" << endl;
             return point;
         }
 
@@ -550,6 +559,20 @@ namespace Clustering {
 
     void Cluster::computecentroid()
     {
+        try{
+
+            if(points == nullptr)
+            {
+                throw RemoveFromEmptyEx(&__centroid,"RemoveFromEmptyEx");
+            }
+
+        }
+        catch(RemoveFromEmptyEx e)
+        {
+            cerr << "ERROR:Exception " << e.getName() << " detected with cluster computecentroid function" << endl;
+            cerr << "Cluster #" << __id << " is already empty" << endl;
+            return;
+        }
         LNodePtr np = points;
         Point p(5);
         while(np != nullptr)
