@@ -3,6 +3,7 @@
 
 #include "Point.h"
 #include <vector>
+#include <forward_list>
 
 namespace Clustering {
 
@@ -22,6 +23,7 @@ namespace Clustering {
     class Cluster {
         int size;
         LNodePtr points;
+        std::forward_list<Point> __points;
         bool __release_points;
         unsigned int __id;
         static unsigned int __idGenerator;
@@ -38,16 +40,16 @@ namespace Clustering {
         ~Cluster();
 
         class Move{
-            PointPtr ptr;
+            Point ptr;
             Cluster *to, *from;
         public:
             void perform();
-            Move(const PointPtr &, Cluster *, Cluster *);
+            Move(const Point &point, Cluster *cfrom, Cluster *cto) : ptr(point), to(cto), from(cfrom)  {};
         };
 
         // Set functions: They allow calling c1.add(c2.remove(p));
-        void add(const PointPtr &);
-        const PointPtr &remove(const PointPtr &);
+        void add(const Point &);
+        const Point &remove(const Point &);
 
         // Overloaded operators
 
@@ -71,8 +73,8 @@ namespace Clustering {
         friend const Cluster operator+(const Cluster &lhs, const Cluster &rhs);
         friend const Cluster operator-(const Cluster &lhs, const Cluster &rhs);
 
-        friend const Cluster operator+(const Cluster &lhs, const PointPtr &rhs);
-        friend const Cluster operator-(const Cluster &lhs, const PointPtr &rhs);
+        friend const Cluster operator+(const Cluster &lhs, const Point &rhs);
+        friend const Cluster operator-(const Cluster &lhs, const Point &rhs);
 
         static unsigned int generateid();
         unsigned int getid()const;
@@ -100,6 +102,8 @@ namespace Clustering {
         LNodePtr getheadpointer() { return points; }
 
         bool checkValidCentroid() {return __centroidvalidity;}
+
+        bool contains(const Point &);
 
     };
 

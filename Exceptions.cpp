@@ -29,7 +29,7 @@ std::string RemoveFromEmptyEx::getName()
     return exname;
 }
 
-PointPtr RemoveFromEmptyEx::getData()
+Point RemoveFromEmptyEx::getData()
 {
     return exdata;
 }

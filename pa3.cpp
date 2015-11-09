@@ -18,18 +18,19 @@ int main() {
     Point p(5);
     double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
     double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
-    double temparray3[5] = {22.0,65.1,12.87,103.0};
+    double temparray3[5] = {22.0,65.1,12.87,103.0, 44};
     Point* p2 = new Point(5, temparray);
     Cluster c1(5);
     Cluster c2(5);
     Point p3(*p2);
     Point* p4 = new Point(5, temparray2);
-    Point* p5 = new Point(4, temparray3);
+    Point* p5 = new Point(5, temparray3);
+    c2 += *p5;
+    c2.add(*p2);
+    c1 += *p4;
+    c1 += p3;
 
-    cout << p3 << endl;
-    cout << p3.distanceTo(*p4);
-
-
+cout << c1.contains(*p5);
 
 
 //    *p4 == *p5;

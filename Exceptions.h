@@ -30,12 +30,12 @@ namespace Clustering {
     class RemoveFromEmptyEx{
 
     public:
-        RemoveFromEmptyEx(PointPtr data, std::string name) : exdata(data), exname(name) {};
+        RemoveFromEmptyEx(Point data, std::string name) : exdata(data), exname(name) {};
         std::string exname;
-        PointPtr exdata;
+        Point exdata;
 
         std::string getName();
-        PointPtr getData();
+        Point getData();
     };
 
 }

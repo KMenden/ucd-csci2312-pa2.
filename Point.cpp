@@ -107,10 +107,10 @@ namespace Clustering {
     bool operator==(const Point &lhs, const Point &rhs) {
         bool result;
 
-        if(lhs.__id != rhs.__id)
-        {
-            return false;
-        }
+//        if(lhs.__id != rhs.__id)
+//        {
+//            return false;
+//        }
 
         try {
             if(lhs.dim != rhs.dim)

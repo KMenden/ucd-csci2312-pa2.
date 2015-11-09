@@ -13,168 +13,22 @@ namespace Clustering {
 
     Cluster::Cluster(const Cluster &other)
     {
-        if(other.points == nullptr)
-        {
-            return;
-        }
         size = other.size;
-        points = new LNode;
-        LNodePtr current = points;
-        LNodePtr othercurrent = other.points;
-
-        for( ; othercurrent != nullptr; current = current->next)
-        {
-            current->p = othercurrent->p;
-            othercurrent = othercurrent->next;
-            if(othercurrent != nullptr)
-            {
-                current->next = new LNode;
-            }
-            else
-            {
-                current->next = nullptr;
-                return;
-            }
-        }
-        __id = 1;
+        pointdimensions = other.pointdimensions;
+        __centroid = other.__centroid;
+        __points = other.__points;
+        __id = generateid();
     }
 
     Cluster& Cluster::operator=(const Cluster &other)
     {
-        if(points == nullptr)
-        {
-            if(other.points == nullptr)
-            {
-                return *this;
-            }
-            size = other.size;
-            points = new LNode;
-            LNodePtr current = points;
-            LNodePtr othercurrent = other.points;
-
-            for( ; othercurrent != nullptr; current = current->next)
-            {
-                current->p = othercurrent->p;
-                othercurrent = othercurrent->next;
-                if(othercurrent != nullptr)
-                {
-                    current->next = new LNode;
-                }
-                else
-                {
-                    current->next = nullptr;
-                    return *this;
-                }
-            }
-        }
-        else
-        {
-          LNodePtr current = points;
-            LNodePtr prev = points;
-            for( ; current != nullptr; current = current->next)
-            {
-                if(current->next == nullptr)
-                {
-                    if(current == prev)
-                    {
-                        delete points;
-                        size--;
-                        points = nullptr;
-                        current = points;
-                        break;
-                    }
-                    else
-                    {
-                        delete current;
-                        prev->next = nullptr;
-                        size--;
-                        prev = points;
-                        current = points;
-                    }
-                }
-                else
-                {
-                    if(current != prev)
-                    {
-                        prev = prev->next;
-                    }
-                }
-
-            }
-            delete prev;
-            points = nullptr;
-            size--;
-            if(points == nullptr)
-            {
-                if (other.points == nullptr)
-                {
-                    return *this;
-                }
-                size = other.size;
-                points = new LNode;
-                LNodePtr current = points;
-                LNodePtr othercurrent = other.points;
-
-                for (; othercurrent != nullptr; current = current->next)
-                {
-                    current->p = othercurrent->p;
-                    othercurrent = othercurrent->next;
-                    if (othercurrent != nullptr)
-                    {
-                        current->next = new LNode;
-                    }
-                    else
-                    {
-                        current->next = nullptr;
-                        return *this;
-                    }
-                }
-            }
-        }
+        __points = other.__points;
+        return *this;
     }
 
     Cluster::~Cluster()
     {
-        for(int i = 0; i < size; i++)
-        {
-            if(points == nullptr)
-            {
-                return;
-            }
-            else
-            {
-                LNodePtr cursor2 = points;
-                LNodePtr temp = points;
-                for(int i2 = 0; i2 < size; i++)
-                {
-                    if(cursor2->next == nullptr)
-                    {
-
-                        delete cursor2;
-                        --size;
-                        cursor2 = points;
-                        for(int i3 = 0; i3 < size - 1; i3++)
-                        {
-                            cursor2 = cursor2->next;
-                        }
-                        cursor2->next = nullptr;
-
-                    }
-                    else
-                    {
-                        cursor2 = cursor2 -> next;
-                    }
-                }
-            }
-        }
-    }
-
-
-    Cluster::Move::Move(const PointPtr &point, Cluster *cfrom, Cluster *cto)
-    {
-        ptr = point;
-        from = cfrom;
-        to = cto;
+       __points.clear();
     }
 
 
@@ -185,63 +39,59 @@ namespace Clustering {
         from->__centroidvalidity = false;
     }
 
-    void Cluster::add(const PointPtr &point) {
-        if (points == nullptr)
+    void Cluster::add(const Point &point) {
+        if (__points.empty())
         {
-            points = new LNode;
-            points->p = point;
-            points->next = nullptr;
+           __points.push_front(point);
             size++;
             return;
         }
-
-        LNodePtr current = points;
-        LNodePtr prev = points;
-        for( ; current != nullptr; current = current->next)
+        else
         {
-            if((*current->p) > *point)
+            std::forward_list<Point>::iterator currentit = __points.begin();
+            std::forward_list<Point>::iterator previt = __points.begin();
+            while(currentit != __points.end())
             {
-                if(current == prev)
+                if(*currentit < point)
                 {
-                    points = new LNode;
-                    points->p = point;
-                    points->next = current;
-                    size++;
-                    return;
+                    if(previt != currentit)
+                    {
+                        previt++;
+                    }
+                    currentit++;
+
                 }
                 else
                 {
-                    prev->next = new LNode;
-                    prev->next->p = point;
-                    prev->next->next = current;
-                    size++;
-                    return;
+                    if(*__points.begin() > point)
+                    {
+                        __points.push_front(point);
+                        ++size;
+                        return;
+                    }
+                    else
+                    {
+                        __points.insert_after(currentit, point);
+                        ++size;
+                        return;
+                    }
                 }
             }
-            else
-            {
-                if(current != prev)
-                {
-                    prev = prev->next;
-                }
-            }
+
+                __points.insert_after(previt, point);
+                ++size;
+                return;
+
         }
-        if(current == nullptr)
-        {
-            prev->next = new LNode;
-            prev->next->p = point;
-            prev->next->next = nullptr;
-            size++;
-            return;
-        }
+
 
     }
 
-    const PointPtr& Cluster::remove(const PointPtr &point)
+    const Point& Cluster::remove(const Point &point)
     {
         try
         {
-            if (points == nullptr) {
+            if (__points.empty()) {
                 throw RemoveFromEmptyEx(point, "RemoveFromEmptyEx");
             }
         }
@@ -252,33 +102,34 @@ namespace Clustering {
             return point;
         }
 
-        LNodePtr current = points;
-        LNodePtr prev = points;
-        for( ; current != nullptr; current = current->next)
+        std::forward_list<Point>::iterator currentit = __points.begin();
+        std::forward_list<Point>::iterator previt = __points.begin();
+
+        while(currentit != __points.end())
         {
-            if(current->p == point)
+            if(*currentit == point )
             {
-                if(current == prev)
+                if(previt != currentit)
                 {
-                    points = prev->next;
-                    size--;
-                    delete current;
+                    __points.erase_after(previt);
+                    --size;
                     return point;
                 }
                 else
                 {
-                    prev->next = current->next;
-                    delete current;
-                    size--;
+                  __points.pop_front();
+                    --size;
                     return point;
                 }
+
             }
             else
             {
-                if(current != prev)
-                {
-                    prev = prev->next;
-                }
+              if(previt != currentit)
+              {
+                  previt++;
+              }
+                currentit++;
             }
         }
     }
@@ -288,213 +139,138 @@ namespace Clustering {
         if (ctemp.size == 0) {
             os << "The list is empty" << std::endl;
         }
-        else {
-            os << *(ctemp.points->p) << ": " << ctemp.getid() << std::endl;
-            if (ctemp.points->next == nullptr)
-            {
-                return os;
-            }
-            else
-            {
-                LNodePtr cursor;
-                cursor = ctemp.points;
-                do
-                {
-                    os << *(cursor->next->p) << ": " << ctemp.getid() << std::endl;
-                    cursor = cursor->next;
-
-                }while(cursor->next != nullptr);
-                return os;
-            }
-        }
-    }
-
-    std::istream &operator>>(std::istream &is, Cluster &ctemp)
-    {
-        string line;
-        while(getline(is, line))
+        else
         {
-            cout << "Line: " << line << endl;
+            std::forward_list<Point>::const_iterator currentit = ctemp.__points.begin();
 
-            int pointdims = 0;
-            stringstream pointdim(line);
-            double temp;
-            stringstream linestream(line);
-            string value;
-            double d;
-            long int countDelim;
-
-            countDelim = count(line.begin(), line.end(), ',') + 1;
-
-            if(countDelim == ctemp.pointdimensions)
+            while(currentit != ctemp.__points.end())
             {
-                PointPtr p = new Point(ctemp.pointdimensions);
+                os << *currentit << ": " << ctemp.getid() << endl;
+                currentit++;
 
-                linestream >> *p;
-
-                ctemp.add(p);
-            }
-            else
-            {
-                cerr << "ERROR: Point " << line << " does not contain the number of dimensions as specified at KMeans object creation!" << endl;
-                cerr << "Point " << line << " was skipped and not added to the clustering algorithm" << endl;
             }
         }
 
+        return os;
     }
 
+
+//    std::istream &operator>>(std::istream &is, Cluster &ctemp)
+//    {
+//        string line;
+//        while(getline(is, line))
+//        {
+//            cout << "Line: " << line << endl;
+//
+//            int pointdims = 0;
+//            stringstream pointdim(line);
+//            double temp;
+//            stringstream linestream(line);
+//            string value;
+//            double d;
+//            long int countDelim;
+//
+//            countDelim = count(line.begin(), line.end(), ',') + 1;
+//
+//            if(countDelim == ctemp.pointdimensions)
+//            {
+//                PointPtr p = new Point(ctemp.pointdimensions);
+//
+//                linestream >> *p;
+//
+//                ctemp.add(p);
+//            }
+//            else
+//            {
+//                cerr << "ERROR: Point " << line << " does not contain the number of dimensions as specified at KMeans object creation!" << endl;
+//                cerr << "Point " << line << " was skipped and not added to the clustering algorithm" << endl;
+//            }
+//        }
+//
+//    }
+//
     bool operator==(const Cluster &lhs, const Cluster &rhs)
     {
         bool result;
-        LNodePtr lhcursor = lhs.points;
-        LNodePtr rhcursor = rhs.points;
-
-        if(lhcursor->p == rhcursor->p)
-        {
-            lhcursor = lhcursor->next;
-            rhcursor = rhcursor->next;
-            for(int i = 1; i < lhs.size; i++)
-            {
-                if(lhcursor->p == rhcursor->p)
-                {
-                    if(lhcursor->next == nullptr)
-                    {
-                        result = true;
-                        return result;
-                    }
-                    lhcursor = lhcursor->next;
-                    rhcursor = rhcursor->next;
-                }
-            }
-        }
-        else
+        if(lhs.pointdimensions != rhs.pointdimensions)
         {
             result = false;
             return result;
         }
+        std::forward_list<Point>::const_iterator lhsit = lhs.__points.begin();
+        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
 
+        while(lhsit != lhs.__points.end() && rhsit != rhs.__points.end())
+        {
+            if(*lhsit == *rhsit)
+            {
+                lhsit++;
+                rhsit++;
+            }
+            else
+            {
+                result = false;
+                return result;
+            }
+        }
+        result = true;
         return result;
+
     }
 
     Cluster& Cluster::operator+=(const Cluster &rhs)
     {
-        if(rhs.points == nullptr)
+        if(rhs.__points.empty())
         {
             return *this;
         }
 
-        LNodePtr current = points;
-        LNodePtr rhscurrent = rhs.points;
+        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
 
-        for( ; rhscurrent != nullptr; rhscurrent = rhscurrent->next)
+        while(rhsit != rhs.__points.end())
         {
-            bool result = false;
-            for( ; current !=nullptr; current = current->next)
-            {
-
-                if(current == nullptr)
-                {
-                    break;
-                }
-                if(current->p == rhscurrent->p)
-                {
-                    result = true;
-                    break;
-                }
-
-            }
-            if(result == false)
-            {
-                add(rhscurrent->p);
-            }
-            current = points;
+            add(*rhsit);
+            rhsit++;
         }
 
         return *this;
+
     }
 
     Cluster& Cluster::operator-=(const Cluster &rhs)
     {
-        if(rhs.points == nullptr)
+        if(rhs.__points.empty())
         {
             return *this;
         }
 
-        LNodePtr current = points;
-        LNodePtr rhscurrent = rhs.points;
+        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
 
-        for( ; rhscurrent != nullptr; rhscurrent = rhscurrent->next)
+        while(rhsit != rhs.__points.end())
         {
-
-            for( ; current !=nullptr; current = current->next)
-            {
-
-                if(current == nullptr)
-                {
-                    break;
-                }
-                if(current->p == rhscurrent->p)
-                {
-                    remove(rhscurrent->p);
-                    break;
-                }
-
-            }
-            current = points;
+            remove(*rhsit);
+            rhsit++;
         }
 
         return *this;
+
     }
 
 
     Cluster& Cluster::operator+=(const Point &rhs)
     {
 
-        PointPtr temp = new Point(rhs);
-        add(temp);
-
+        add(rhs);
         return *this;
     }
 
     Cluster& Cluster::operator-=(const Point &rhs)
     {
-        if(points == nullptr)
-        {
-            return *this;
-        }
-
-        LNodePtr current = points;
-        LNodePtr prev = points;
-        for( ; current != nullptr; current = current->next)
-        {
-            if(current->p == &rhs)
-            {
-                if(current == prev)
-                {
-                    points = prev->next;
-                    size--;
-                    delete current;
-                    return *this;
-                }
-                else
-                {
-                    prev->next = current->next;
-                    delete current;
-                    size--;
-                    return *this;
-                }
-            }
-            else
-            {
-                if(current != prev)
-                {
-                    prev = prev->next;
-                }
-            }
-        }
+        remove(rhs);
+        return *this;
     }
 
-    const Cluster operator+(const Cluster &lhs, const PointPtr &rhs)
+    const Cluster operator+(const Cluster &lhs, const Point &rhs)
     {
         Cluster result(lhs);
 
@@ -503,7 +279,7 @@ namespace Clustering {
         return result;
 
     }
-    const Cluster operator-(const Cluster &lhs, const PointPtr &rhs)
+    const Cluster operator-(const Cluster &lhs, const Point &rhs)
     {
         Cluster result(lhs);
 
@@ -561,9 +337,9 @@ namespace Clustering {
     {
         try{
 
-            if(points == nullptr)
+            if(__points.empty())
             {
-                throw RemoveFromEmptyEx(&__centroid,"RemoveFromEmptyEx");
+                throw RemoveFromEmptyEx(__centroid,"RemoveFromEmptyEx");
             }
 
         }
@@ -573,12 +349,12 @@ namespace Clustering {
             cerr << "Cluster #" << __id << " is already empty" << endl;
             return;
         }
-        LNodePtr np = points;
-        Point p(5);
-        while(np != nullptr)
+        std::forward_list<Point>::iterator currentit = __points.begin();
+        Point p(pointdimensions);
+        while(currentit != __points.end())
         {
-            p += *np->p / 5;
-            np = np->next;
+            p += *currentit / pointdimensions;
+            currentit++;
         }
         __centroid = p;
         __centroidvalidity = true;
@@ -590,59 +366,63 @@ namespace Clustering {
         LNodePtr current = points;
         int index = 0;
 
-        while(current != nullptr && current->next != nullptr && index < k)
+        std::forward_list<Point>::iterator currentit = __points.begin();
+
+        while(currentit != __points.end() && index < k)
         {
 
-            pointarray[index] = *(current->p);
-            current = current->next->next;
+            pointarray[index] = *currentit;
+            currentit++;
             index++;
         }
     }
 
 
-    double Cluster::intraClusterDistance() const
-    {
-        LNodePtr firstpoint = points;
-        LNodePtr secondpoint = points;
-        double distance;
-        double sum;
-
-        while(firstpoint != nullptr)
-        {
-            while(secondpoint != nullptr)
-            {
-              distance = firstpoint->p->distanceTo(*(secondpoint->p));
-                sum += distance;
-                secondpoint = secondpoint->next;
-            }
-            secondpoint = points;
-            firstpoint = firstpoint->next;
-        }
-        sum /= 2;
-        return sum;
-
-    }
-
-    double interClusterDistance(const Cluster &c1, const Cluster &c2)
-    {
-        LNodePtr c1current = c1.points;
-         LNodePtr c2current = c2.points;
-        double distance;
-        double sum;
-
-        while(c1current != nullptr)
-        {
-            while(c2current != nullptr)
-            {
-                distance = c1current->p->distanceTo(*(c2current->p));
-                sum += distance;
-                c2current = c2current->next;
-            }
-            c2current = c2.points;
-            c1current = c1current->next;
-        }
-        return sum;
-    }
+//    double Cluster::intraClusterDistance() const
+//    {
+//        std::forward_list<Point>::const_iterator firstit = __points.begin();
+//        std::forward_list<Point>::const_iterator secondit = __points.begin();
+//        LNodePtr firstpoint = points;
+//        LNodePtr secondpoint = points;
+//        double distance;
+//        double sum;
+//
+//        while(firstit != __points.begin())
+//        {
+//            while(secondit != __points.begin())
+//            {
+//              distance = *firstit->distanceTo(*secondit);
+//                sum += distance;
+//                secondpoint = secondpoint->next;
+//            }
+//            secondpoint = points;
+//            firstpoint = firstpoint->next;
+//        }
+//        sum /= 2;
+//        return sum;
+//
+//    }
+//
+//    double interClusterDistance(const Cluster &c1, const Cluster &c2)
+//    {
+//        LNodePtr c1current = c1.points;
+//         LNodePtr c2current = c2.points;
+//        double distance;
+//        double sum;
+//
+//        while(c1current != nullptr)
+//        {
+//            while(c2current != nullptr)
+//            {
+//                distance = c1current->p->distanceTo(*(c2current->p));
+//                sum += distance;
+//                c2current = c2current->next;
+//            }
+//            c2current = c2.points;
+//            c1current = c1current->next;
+//        }
+//        return sum;
+//    }
 
     int Cluster::getClusterEdges()
     {
@@ -665,6 +445,24 @@ namespace Clustering {
     void Cluster::setPointDemensions(unsigned int value)
     {
         pointdimensions = value;
+    }
+
+    bool Cluster::contains(const Point &point)
+    {
+        std::forward_list<Point>::iterator currentit = __points.begin();
+
+        while(currentit != __points.end())
+        {
+            if(*currentit == point)
+            {
+                return true;
+            }
+            else
+            {
+                currentit++;
+            }
+        }
+        return false;
     }
 
 }
