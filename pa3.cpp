@@ -1,36 +1,36 @@
 #include "Point.h"
-#include "Cluster.h"
-#include "KMeans.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 
 
 using namespace Clustering;
 using namespace std;
 
-
 int main() {
-    int k = 3;
-    string line;
-    ifstream csv("points.txt");
-    Point p(5);
+//    int k = 3;
+//    string line;
+//    ifstream csv("points.txt");
+//    Point p(5);
     double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
     double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
     double temparray3[5] = {22.0,65.1,12.87,103.0, 44};
-    Point* p2 = new Point(5, temparray);
-    Cluster c1(5);
-    Cluster c2(5);
-    Point p3(*p2);
-    Point* p4 = new Point(5, temparray2);
-    Point* p5 = new Point(5, temparray3);
-    c2 += *p5;
-    c2.add(*p2);
-    c1 += *p4;
-    c1 += p3;
+//    Point* p2 = new Point(5, temparray);
+//    Cluster c1(5);
+//    Cluster c2(5);
+//    Point p3(*p2);
+//    Point* p4 = new Point(5, temparray2);
+//    Point* p5 = new Point(5, temparray3);
+//    c2 += *p5;
+//    c2.add(*p2);
+//    c1 += *p4;
+//    c1 += p3;
 
-cout << c1.contains(*p5);
+    Point<double, 5> test(5, temparray);
+
+    cout << test[1];
 
 
 //    *p4 == *p5;

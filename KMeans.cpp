@@ -6,10 +6,12 @@
 //#include <sstream>
 //#include <fstream>
 //#include <vector>
-//
+//#include <unordered_map>
 //
 //using namespace Clustering;
 //using namespace std;
+//
+//
 //
 //double KMeans::mindistance(Point &point, Point centroid)
 //{
@@ -18,7 +20,7 @@
 //    return distance;
 //}
 //
-//void KMeans::start()
+//void KMeans::run()
 //{
 //    vector<Cluster> clusterarray;
 //    clusterarray.reserve(k);
@@ -30,9 +32,12 @@
 //    double scorediff = SCORE_DIFF_THRESHOLD + 1;
 //    Cluster point_space(pointdemensions);
 //    ifstream csv(filename);
-////    csv >> point_space;
+//    csv >> point_space;
 //    csv.close();
 //    clusterarray[0] = point_space;
+//
+//    point_space.computeMap();
+//
 //    vector<Point> pointarray;
 //    pointarray.reserve(k);
 //    for (int i = 0; i < k; i++)
@@ -52,8 +57,9 @@
 //        for (int i = 0; i < k; i++)
 //        {
 //            LNodePtr current = clusterarray[i].getheadpointer();
+//            std::forward_list<Point>::iterator currentit = clusterarray[i].getItBegin();
 //            double minimaldistance = 99999;
-//            while (current != nullptr)
+//            while (currentit != clusterarray[i].getItEnd())
 //            {
 //                bool checkswap = false;
 //                bool swap = false;
@@ -61,7 +67,7 @@
 //                for (int i2 = 0; i2 < k; i2++)
 //                {
 //
-//                    double distance = mindistance(*(current->p), clusterarray[i2].getcentroid());
+//                    double distance = mindistance(*currentit, clusterarray[i2].getcentroid());
 //                    if (distance < minimaldistance)
 //                    {
 //                        minimaldistance = distance;
@@ -72,15 +78,15 @@
 //                }
 //                if (clusterindex != clusterarray[i].getid() - 1 && checkswap)
 //                {
-//                    Cluster::Move moveclusters(current->p, &clusterarray[i], &clusterarray[clusterindex]);
-////                    moveclusters.perform();
-//                    current = clusterarray[i].getheadpointer();
+//                    Cluster::Move moveclusters(*currentit, &clusterarray[i], &clusterarray[clusterindex]);
+//                    moveclusters.perform();
+//                    currentit = clusterarray[i].getItBegin();
 //                    swap = true;
 //                }
 //
 //                if (swap == false)
 //                {
-//                    current = current->next;
+//                    currentit++;
 //                }
 //                minimaldistance = 99999;
 //            }
@@ -103,11 +109,11 @@
 //    ofstream output("results.txt");
 //    for (int i = 0; i < k; i++)
 //    {
-////        output << clusterarray[i];
+//        output << clusterarray[i];
 //    }
 //    for (int i = 0; i < k; i++)
 //    {
-////        cout << clusterarray[i];
+//        cout << clusterarray[i];
 //    }
 //    output.close();
 //}
@@ -122,6 +128,8 @@
 //            double sum = clusterarray[index].intraClusterDistance();
 //            dIn += sum;
 //        }
+//
+//
 //
 //        double dOut = 0;
 //

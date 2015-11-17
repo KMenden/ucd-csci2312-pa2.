@@ -7,10 +7,11 @@
 #include <vector>
 
 
+
 namespace Clustering {
+    template<typename T, int dim>
     class Point {
-        int dim;
-        std::vector<double> coords;
+        std::vector<T> coords;
         static constexpr char POINT_VALUE_DELIM = ',';
         unsigned int __id;
 
@@ -18,64 +19,75 @@ namespace Clustering {
         // Constructors
         Point();                      // default constructor
         Point(int);    // constructor with a given number of dimensions
-        Point(int, double *);
-        Point(const Point &);
+        Point(int, T *);
+        Point(const Point<T, dim> &);
 
         // Destructor
         ~Point();
 
         // Overloaded assignment, comparison, and arithmetic operators
-        Point &operator=(const Point &rhs);
+        Point<T, dim> &operator=(const Point &rhs);
 
-        friend bool operator==(const Point &, const Point &);
+//        friend bool operator==(const Point &, const Point &);
+//
+//        friend bool operator!=(const Point &, const Point &);
+//
+//        friend bool operator<(const Point &, const Point &);
+//
+//        friend bool operator>(const Point &, const Point &);
+//
+//        friend bool operator<=(const Point &, const Point &);
+//
+//        friend bool operator>=(const Point &, const Point &);
+//
+//        friend Point &operator+=(Point &, const Point &);
+//
+//        friend Point &operator-=(Point &, const Point &);
+//
+//        friend const Point operator+(const Point &, const Point &);
+//
+//        friend const Point operator-(const Point &, const Point &);
+//
+        T &operator[](int index) { return coords[index]; }
+//
+//        friend std::ostream &operator<<(std::ostream &output, const Point &point);
+//
+//        friend std::istream &operator>>(std::istream &, Point &);
+//
+//
+//        //Member Variable overloaded arithemtic operators
+        Point &operator*=(T);
 
-        friend bool operator!=(const Point &, const Point &);
+        Point &operator/=(T);
 
-        friend bool operator<(const Point &, const Point &);
+        const Point operator*(T) const;
 
-        friend bool operator>(const Point &, const Point &);
-
-        friend bool operator<=(const Point &, const Point &);
-
-        friend bool operator>=(const Point &, const Point &);
-
-        friend Point &operator+=(Point &, const Point &);
-
-        friend Point &operator-=(Point &, const Point &);
-
-        friend const Point operator+(const Point &, const Point &);
-
-        friend const Point operator-(const Point &, const Point &);
-
-        double &operator[](int index) { return coords[index - 1]; }
-
-        friend std::ostream &operator<<(std::ostream &output, const Point &point);
-
-        friend std::istream &operator>>(std::istream &, Point &);
-
-        //Member Variable overloaded arithemtic operators
-        Point &operator*=(double);
-
-        Point &operator/=(double);
-
-        const Point operator*(double) const;
-
-        const Point operator/(double) const;
+        const Point operator/(T) const;
 
         // Mutator methods
-        double getValue(int) const;
-        void setValue(int, double);
+        T getValue(int) const;
+        void setValue(int, T);
 
         // Accessor methods
         int getDims() const { return dim; }
 
-        double distanceTo(Point &point1);
+        T distanceTo(Point &point1) const;
 
         static unsigned int generateid();
+
+        void static rewindIdGen();
+
         unsigned int getid()const;
 
 
+
+
+
     };
+
 }
+
+#include "Point.cpp"
+
 
 #endif // __point_h

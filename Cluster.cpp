@@ -1,160 +1,168 @@
-#include "Cluster.h"
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-#include "Exceptions.h"
-
-using namespace Clustering;
-using namespace std;
-
-namespace Clustering {
-
-    Cluster::Cluster(const Cluster &other)
-    {
-        size = other.size;
-        pointdimensions = other.pointdimensions;
-        __centroid = other.__centroid;
-        __points = other.__points;
-        __id = generateid();
-    }
-
-    Cluster& Cluster::operator=(const Cluster &other)
-    {
-        __points = other.__points;
-        return *this;
-    }
-
-    Cluster::~Cluster()
-    {
-       __points.clear();
-    }
-
-
-    void Cluster::Move::perform()
-    {
-        to->add(from->remove(ptr));
-        to->__centroidvalidity = false;
-        from->__centroidvalidity = false;
-    }
-
-    void Cluster::add(const Point &point) {
-        if (__points.empty())
-        {
-           __points.push_front(point);
-            size++;
-            return;
-        }
-        else
-        {
-            std::forward_list<Point>::iterator currentit = __points.begin();
-            std::forward_list<Point>::iterator previt = __points.begin();
-            while(currentit != __points.end())
-            {
-                if(*currentit < point)
-                {
-                    if(previt != currentit)
-                    {
-                        previt++;
-                    }
-                    currentit++;
-
-                }
-                else
-                {
-                    if(*__points.begin() > point)
-                    {
-                        __points.push_front(point);
-                        ++size;
-                        return;
-                    }
-                    else
-                    {
-                        __points.insert_after(currentit, point);
-                        ++size;
-                        return;
-                    }
-                }
-            }
-
-                __points.insert_after(previt, point);
-                ++size;
-                return;
-
-        }
-
-
-    }
-
-    const Point& Cluster::remove(const Point &point)
-    {
-        try
-        {
-            if (__points.empty()) {
-                throw RemoveFromEmptyEx(point, "RemoveFromEmptyEx");
-            }
-        }
-        catch(RemoveFromEmptyEx e)
-        {
-            cerr << "ERROR:Exception " << e.getName() << " detected with cluster remove function" << endl;
-            cerr << "Cluster #" << __id << " is already empty" << endl;
-            return point;
-        }
-
-        std::forward_list<Point>::iterator currentit = __points.begin();
-        std::forward_list<Point>::iterator previt = __points.begin();
-
-        while(currentit != __points.end())
-        {
-            if(*currentit == point )
-            {
-                if(previt != currentit)
-                {
-                    __points.erase_after(previt);
-                    --size;
-                    return point;
-                }
-                else
-                {
-                  __points.pop_front();
-                    --size;
-                    return point;
-                }
-
-            }
-            else
-            {
-              if(previt != currentit)
-              {
-                  previt++;
-              }
-                currentit++;
-            }
-        }
-    }
-
-    std::ostream &operator<<(std::ostream &os, const Cluster &ctemp) {
-
-        if (ctemp.size == 0) {
-            os << "The list is empty" << std::endl;
-        }
-        else
-        {
-            std::forward_list<Point>::const_iterator currentit = ctemp.__points.begin();
-
-            while(currentit != ctemp.__points.end())
-            {
-                os << *currentit << ": " << ctemp.getid() << endl;
-                currentit++;
-
-            }
-        }
-
-        return os;
-    }
-
-
+//#include "Cluster.h"
+//#include <iostream>
+//#include <string>
+//#include <sstream>
+//#include <vector>
+//#include <algorithm>
+//#include "Exceptions.h"
+//#include <unordered_map>
+//
+//using namespace Clustering;
+//using namespace std;
+//
+//
+//
+//namespace Clustering {
+//
+//
+//
+//    Cluster::Cluster(const Cluster &other)
+//    {
+//        size = other.size;
+//        pointdimensions = other.pointdimensions;
+//        __centroid = other.__centroid;
+//        __points = other.__points;
+//        __id = generateid();
+//    }
+//
+//    Cluster& Cluster::operator=(const Cluster &other)
+//    {
+//        size = other.size;
+//        __points = other.__points;
+//        return *this;
+//    }
+//
+//    Cluster::~Cluster()
+//    {
+//       __points.clear();
+//    }
+//
+//
+//    void Cluster::Move::perform()
+//    {
+//        to->add(from->remove(ptr));
+//        to->__centroidvalidity = false;
+//        from->__centroidvalidity = false;
+//    }
+//
+//    void Cluster::add(const Point &point) {
+//        if (__points.empty())
+//        {
+//           __points.push_front(point);
+//            size++;
+//            return;
+//        }
+//        else
+//        {
+//            std::forward_list<Point>::iterator currentit = __points.begin();
+//            std::forward_list<Point>::iterator previt = __points.begin();
+//            while(currentit != __points.end())
+//            {
+//                if(*currentit < point)
+//                {
+//                    if(previt != currentit)
+//                    {
+//                        previt++;
+//                    }
+//                    currentit++;
+//
+//                }
+//                else
+//                {
+//                    if(*__points.begin() > point)
+//                    {
+//                        __points.push_front(point);
+//                        ++size;
+//                        return;
+//                    }
+//                    else
+//                    {
+//                        __points.insert_after(currentit, point);
+//                        ++size;
+//                        return;
+//                    }
+//                }
+//            }
+//
+//                __points.insert_after(previt, point);
+//                ++size;
+//                return;
+//
+//        }
+//
+//
+//    }
+//
+//    const Point& Cluster::remove(const Point &point)
+//    {
+//        try
+//        {
+//            if (__points.empty()) {
+//                throw RemoveFromEmptyEx(point, "RemoveFromEmptyEx");
+//            }
+//        }
+//        catch(RemoveFromEmptyEx e)
+//        {
+//            cerr << "ERROR:Exception " << e.getName() << " detected with cluster remove function" << endl;
+//            cerr << "Cluster #" << __id << " is already empty" << endl;
+//            return point;
+//        }
+//
+//        std::forward_list<Point>::iterator currentit = __points.begin();
+//        std::forward_list<Point>::iterator previt = __points.begin();
+//
+//        while(currentit != __points.end())
+//        {
+//            if(*currentit == point )
+//            {
+//                if(previt != currentit)
+//                {
+//                    __points.erase_after(previt);
+//                    --size;
+//                    return point;
+//                }
+//                else
+//                {
+//                  __points.pop_front();
+//                    --size;
+//                    return point;
+//                }
+//
+//            }
+//            else
+//            {
+//              if(previt != currentit)
+//              {
+//                  previt++;
+//              }
+//                currentit++;
+//            }
+//        }
+//
+//        return point;
+//    }
+//
+//    std::ostream &operator<<(std::ostream &os, const Cluster &ctemp) {
+//
+//        if (ctemp.size == 0) {
+//            os << "The list is empty" << std::endl;
+//        }
+//        else
+//        {
+//            std::forward_list<Point>::const_iterator currentit = ctemp.__points.begin();
+//
+//            while(currentit != ctemp.__points.end())
+//            {
+//                os << *currentit << ": " << ctemp.getid() << endl;
+//                currentit++;
+//
+//            }
+//        }
+//
+//        return os;
+//    }
+//
+//
 //    std::istream &operator>>(std::istream &is, Cluster &ctemp)
 //    {
 //        string line;
@@ -174,11 +182,11 @@ namespace Clustering {
 //
 //            if(countDelim == ctemp.pointdimensions)
 //            {
-//                PointPtr p = new Point(ctemp.pointdimensions);
+//                Point* p = new Point(ctemp.pointdimensions);
 //
 //                linestream >> *p;
 //
-//                ctemp.add(p);
+//                ctemp.add(*p);
 //            }
 //            else
 //            {
@@ -189,280 +197,336 @@ namespace Clustering {
 //
 //    }
 //
-    bool operator==(const Cluster &lhs, const Cluster &rhs)
-    {
-        bool result;
-        if(lhs.pointdimensions != rhs.pointdimensions)
-        {
-            result = false;
-            return result;
-        }
-        std::forward_list<Point>::const_iterator lhsit = lhs.__points.begin();
-        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
-
-        while(lhsit != lhs.__points.end() && rhsit != rhs.__points.end())
-        {
-            if(*lhsit == *rhsit)
-            {
-                lhsit++;
-                rhsit++;
-            }
-            else
-            {
-                result = false;
-                return result;
-            }
-        }
-        result = true;
-        return result;
-
-    }
-
-    Cluster& Cluster::operator+=(const Cluster &rhs)
-    {
-        if(rhs.__points.empty())
-        {
-            return *this;
-        }
-
-        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
-
-        while(rhsit != rhs.__points.end())
-        {
-            add(*rhsit);
-            rhsit++;
-        }
-
-        return *this;
-
-    }
-
-    Cluster& Cluster::operator-=(const Cluster &rhs)
-    {
-        if(rhs.__points.empty())
-        {
-            return *this;
-        }
-
-        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
-
-        while(rhsit != rhs.__points.end())
-        {
-            remove(*rhsit);
-            rhsit++;
-        }
-
-        return *this;
-
-    }
-
-
-    Cluster& Cluster::operator+=(const Point &rhs)
-    {
-
-        add(rhs);
-        return *this;
-    }
-
-    Cluster& Cluster::operator-=(const Point &rhs)
-    {
-        remove(rhs);
-        return *this;
-    }
-
-    const Cluster operator+(const Cluster &lhs, const Point &rhs)
-    {
-        Cluster result(lhs);
-
-        result.add(rhs);
-
-        return result;
-
-    }
-    const Cluster operator-(const Cluster &lhs, const Point &rhs)
-    {
-        Cluster result(lhs);
-
-        result.remove(rhs);
-
-        return result;
-    }
-
-
-    const Cluster operator+(const Cluster &lhs, const Cluster &rhs)
-    {
-        Cluster result(lhs);
-
-        result += rhs;
-
-        return result;
-    }
-
-    const Cluster operator-(const Cluster &lhs, const Cluster &rhs)
-    {
-        Cluster result(lhs);
-        result -= rhs;
-
-        return result;
-    }
-
-    unsigned int Cluster::generateid()
-    {
-        static unsigned int tempid = 0;
-        tempid++;
-        return tempid;
-    }
-
-   unsigned int Cluster::getid()const {
-        return __id;
-    }
-
-    int Cluster::getsize()
-    {
-        return size;
-    }
-
-    void Cluster::setcentroid(const Point &point)
-    {
-            __centroid = point;
-        return;
-    }
-
-    const Point Cluster::getcentroid()
-    {
-        return __centroid;
-    }
-
-    void Cluster::computecentroid()
-    {
-        try{
-
-            if(__points.empty())
-            {
-                throw RemoveFromEmptyEx(__centroid,"RemoveFromEmptyEx");
-            }
-
-        }
-        catch(RemoveFromEmptyEx e)
-        {
-            cerr << "ERROR:Exception " << e.getName() << " detected with cluster computecentroid function" << endl;
-            cerr << "Cluster #" << __id << " is already empty" << endl;
-            return;
-        }
-        std::forward_list<Point>::iterator currentit = __points.begin();
-        Point p(pointdimensions);
-        while(currentit != __points.end())
-        {
-            p += *currentit / pointdimensions;
-            currentit++;
-        }
-        __centroid = p;
-        __centroidvalidity = true;
-    }
-
-
-    void Cluster::pickPoints(int k, vector<Point> &pointarray)
-    {
-        LNodePtr current = points;
-        int index = 0;
-
-        std::forward_list<Point>::iterator currentit = __points.begin();
-
-        while(currentit != __points.end() && index < k)
-        {
-
-            pointarray[index] = *currentit;
-            currentit++;
-            index++;
-        }
-    }
-
-
-//    double Cluster::intraClusterDistance() const
+//    bool operator==(const Cluster &lhs, const Cluster &rhs)
 //    {
-//        std::forward_list<Point>::const_iterator firstit = __points.begin();
-//        std::forward_list<Point>::const_iterator secondit = __points.begin();
-//        LNodePtr firstpoint = points;
-//        LNodePtr secondpoint = points;
-//        double distance;
-//        double sum;
-//
-//        while(firstit != __points.begin())
+//        bool result;
+//        if(lhs.pointdimensions != rhs.pointdimensions)
 //        {
-//            while(secondit != __points.begin())
-//            {
-//              distance = *firstit->distanceTo(*secondit);
-//                sum += distance;
-//                secondpoint = secondpoint->next;
-//            }
-//            secondpoint = points;
-//            firstpoint = firstpoint->next;
+//            result = false;
+//            return result;
 //        }
-//        sum /= 2;
-//        return sum;
+//        std::forward_list<Point>::const_iterator lhsit = lhs.__points.begin();
+//        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
+//
+//        while(lhsit != lhs.__points.end() && rhsit != rhs.__points.end())
+//        {
+//            if(*lhsit == *rhsit)
+//            {
+//                lhsit++;
+//                rhsit++;
+//            }
+//            else
+//            {
+//                result = false;
+//                return result;
+//            }
+//        }
+//        result = true;
+//        return result;
 //
 //    }
 //
-//    double interClusterDistance(const Cluster &c1, const Cluster &c2)
+//    Cluster& Cluster::operator+=(const Cluster &rhs)
 //    {
-//        LNodePtr c1current = c1.points;
-//         LNodePtr c2current = c2.points;
-//        double distance;
-//        double sum;
-//
-//        while(c1current != nullptr)
+//        if(rhs.__points.empty())
 //        {
-//            while(c2current != nullptr)
-//            {
-//                distance = c1current->p->distanceTo(*(c2current->p));
-//                sum += distance;
-//                c2current = c2current->next;
-//            }
-//            c2current = c2.points;
-//            c1current = c1current->next;
+//            return *this;
 //        }
-//        return sum;
+//
+//        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
+//
+//        while(rhsit != rhs.__points.end())
+//        {
+//            add(*rhsit);
+//            rhsit++;
+//        }
+//
+//        return *this;
+//
 //    }
-
-    int Cluster::getClusterEdges()
-    {
-        int edges = 0;
-
-        edges = (size *(size - 1)) / 2;
-
-        return edges;
-    }
-
-    double interClusterEdges(const Cluster &c1, const Cluster &c2)
-    {
-        int edges = 0;
-
-        edges = c1.size * c2.size;
-
-        return edges;
-    }
-
-    void Cluster::setPointDemensions(unsigned int value)
-    {
-        pointdimensions = value;
-    }
-
-    bool Cluster::contains(const Point &point)
-    {
-        std::forward_list<Point>::iterator currentit = __points.begin();
-
-        while(currentit != __points.end())
-        {
-            if(*currentit == point)
-            {
-                return true;
-            }
-            else
-            {
-                currentit++;
-            }
-        }
-        return false;
-    }
-
-}
+//
+//    Cluster& Cluster::operator-=(const Cluster &rhs)
+//    {
+//        if(rhs.__points.empty())
+//        {
+//            return *this;
+//        }
+//
+//        std::forward_list<Point>::const_iterator rhsit = rhs.__points.begin();
+//
+//        while(rhsit != rhs.__points.end())
+//        {
+//            remove(*rhsit);
+//            rhsit++;
+//        }
+//
+//        return *this;
+//
+//    }
+//
+//
+//    Cluster& Cluster::operator+=(const Point &rhs)
+//    {
+//
+//        add(rhs);
+//        return *this;
+//    }
+//
+//    Cluster& Cluster::operator-=(const Point &rhs)
+//    {
+//        remove(rhs);
+//        return *this;
+//    }
+//
+//    const Cluster operator+(const Cluster &lhs, const Point &rhs)
+//    {
+//        Cluster result(lhs);
+//
+//        result.add(rhs);
+//
+//        return result;
+//
+//    }
+//    const Cluster operator-(const Cluster &lhs, const Point &rhs)
+//    {
+//        Cluster result(lhs);
+//
+//        result.remove(rhs);
+//
+//        return result;
+//    }
+//
+//
+//    const Cluster operator+(const Cluster &lhs, const Cluster &rhs)
+//    {
+//        Cluster result(lhs);
+//
+//        result += rhs;
+//
+//        return result;
+//    }
+//
+//    const Cluster operator-(const Cluster &lhs, const Cluster &rhs)
+//    {
+//        Cluster result(lhs);
+//        result -= rhs;
+//
+//        return result;
+//    }
+//
+//    unsigned int Cluster::generateid()
+//    {
+//        static unsigned int tempid = 0;
+//        tempid++;
+//        return tempid;
+//    }
+//
+//   unsigned int Cluster::getid()const {
+//        return __id;
+//    }
+//
+//    int Cluster::getsize()
+//    {
+//        return size;
+//    }
+//
+//    void Cluster::setcentroid(const Point &point)
+//    {
+//            __centroid = point;
+//        return;
+//    }
+//
+//    const Point Cluster::getcentroid()
+//    {
+//        return __centroid;
+//    }
+//
+//    void Cluster::computecentroid()
+//    {
+//        try{
+//
+//            if(__points.empty())
+//            {
+//                throw RemoveFromEmptyEx(__centroid,"RemoveFromEmptyEx");
+//            }
+//
+//        }
+//        catch(RemoveFromEmptyEx e)
+//        {
+//            cerr << "ERROR:Exception " << e.getName() << " detected with cluster computecentroid function" << endl;
+//            cerr << "Cluster #" << __id << " is already empty" << endl;
+//            return;
+//        }
+//        std::forward_list<Point>::iterator currentit = __points.begin();
+//        Point p(pointdimensions);
+//        while(currentit != __points.end())
+//        {
+//            p += *currentit / pointdimensions;
+//            currentit++;
+//        }
+//        __centroid = p;
+//        __centroidvalidity = true;
+//    }
+//
+//
+//    void Cluster::pickPoints(int k, vector<Point> &pointarray)
+//    {
+//        LNodePtr current = points;
+//        int index = 0;
+//
+//        std::forward_list<Point>::iterator currentit = __points.begin();
+//
+//        while(currentit != __points.end() && index < k)
+//        {
+//
+//            pointarray[index] = *currentit;
+//            currentit++;
+//            index++;
+//        }
+//    }
+//
+//
+//    double Cluster::intraClusterDistance()
+//    {
+//        if(pointDistances.empty()) {
+//            std::forward_list<Point>::iterator firstit = __points.begin();
+//            std::forward_list<Point>::iterator secondit = __points.begin();
+//            LNodePtr firstpoint = points;
+//            LNodePtr secondpoint = points;
+//            double distance = 0;
+//            double sum = 0;
+//
+//            while (firstit != __points.end()) {
+//                while (secondit != __points.end()) {
+//                    distance = firstit->distanceTo(*secondit);
+//                    sum += distance;
+//                    secondit++;
+//                }
+//                secondit = __points.begin();
+//                firstit++;
+//            }
+//            sum /= 2;
+//            return sum;
+//        }
+//        else
+//        {
+//            double distance = 0;
+//            double sum = 0;
+//            std::forward_list<Point>::iterator firstit = __points.begin();
+//            std::forward_list<Point>::iterator secondit = __points.begin();
+//
+//            secondit++;
+//            while(firstit != __points.end())
+//            {
+//                while(secondit != __points.end())
+//                {
+//                    distance = pointDistances[CantorFunction(firstit->getid(), secondit->getid())];
+//                    sum += distance;
+//                    secondit++;
+//                }
+//                firstit++;
+//                secondit = firstit;
+//                if(secondit == __points.end())
+//                {
+//                    break;
+//                }
+//                secondit++;
+//            }
+//
+//            return sum;
+//        }
+//
+//    }
+//
+//    double interClusterDistance(Cluster &c1, Cluster &c2)
+//    {
+//        if(c1.pointDistances.empty())
+//        {
+//            std::forward_list<Point>::iterator firstit = c1.__points.begin();
+//            std::forward_list<Point>::iterator secondit = c2.__points.begin();
+//            double distance = 0;
+//            double sum = 0;
+//
+//            while (firstit != c1.__points.end())
+//            {
+//                while (secondit != c2.__points.end())
+//                {
+//                    double const distance = firstit->distanceTo(*secondit);
+//                    sum += distance;
+//                    secondit++;
+//                }
+//                secondit = c2.__points.begin();
+//                firstit++;
+//            }
+//            return sum;
+//        }
+//        else
+//        {
+//            std::forward_list<Point>::iterator firstit = c1.__points.begin();
+//            std::forward_list<Point>::iterator secondit = c2.__points.begin();
+//            double distance = 0;
+//            double sum = 0;
+//
+//            while (firstit != c1.__points.end())
+//            {
+//                while (secondit != c2.__points.end())
+//                {
+//                    distance = c1.pointDistances[c1.CantorFunction(firstit->getid(), secondit->getid())];
+//                    sum += distance;
+//                    secondit++;
+//                }
+//                firstit++;
+//                secondit = firstit;
+//                if(secondit == c1.__points.end())
+//                {
+//                    break;
+//                }
+//                secondit++;
+//            }
+//            return sum;
+//        }
+//    }
+//
+//    int Cluster::getClusterEdges()
+//    {
+//        int edges = 0;
+//
+//        edges = (size *(size - 1)) / 2;
+//
+//        return edges;
+//    }
+//
+//    double interClusterEdges(const Cluster &c1, const Cluster &c2)
+//    {
+//        int edges = 0;
+//
+//        edges = c1.size * c2.size;
+//
+//        return edges;
+//    }
+//
+//    void Cluster::setPointDemensions(unsigned int value)
+//    {
+//        pointdimensions = value;
+//    }
+//
+//    bool Cluster::contains(const Point &point)
+//    {
+//        std::forward_list<Point>::iterator currentit = __points.begin();
+//
+//        while(currentit != __points.end())
+//        {
+//            if(*currentit == point)
+//            {
+//                return true;
+//            }
+//            else
+//            {
+//                currentit++;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    std::unordered_map<unsigned int, double> Cluster::pointDistances;
+//}
