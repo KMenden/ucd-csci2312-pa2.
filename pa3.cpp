@@ -1,4 +1,5 @@
 #include "Point.h"
+#include "Cluster.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -13,26 +14,20 @@ int main() {
 //    int k = 3;
 //    string line;
 //    ifstream csv("points.txt");
-//    Point p(5);
-    double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
+
+    float temparray[5] = {3.0,5.4,8.7,9.0,11.2};
     double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
     double temparray3[5] = {22.0,65.1,12.87,103.0, 44};
-//    Point* p2 = new Point(5, temparray);
-//    Cluster c1(5);
-//    Cluster c2(5);
-//    Point p3(*p2);
-//    Point* p4 = new Point(5, temparray2);
-//    Point* p5 = new Point(5, temparray3);
-//    c2 += *p5;
-//    c2.add(*p2);
-//    c1 += *p4;
-//    c1 += p3;
 
-    Point<double, 5> test(5, temparray);
+    Point<float,5> testp(5, temparray);
+    Point<float,5> test2(testp);
+    Cluster<Point<float, 5>, 5> test(5);
+    Cluster<Point<float, 5>, 5> testc2(5);
+    test.add(testp);
+    test.add(test2);
 
-    cout << test[1];
-
-
+test += testp;
+    cout << test;
 //    *p4 == *p5;
 //    *p4 != *p5;
 //    *p4 < *p5;
