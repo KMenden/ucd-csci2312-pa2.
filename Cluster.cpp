@@ -23,6 +23,7 @@ namespace Clustering {
         __centroid = other.__centroid;
         __points = other.__points;
         __id = generateid();
+
     }
 
     template<typename T, int dim>
@@ -39,13 +40,13 @@ namespace Clustering {
        __points.clear();
     }
 
-//
-//    void Cluster::Move::perform()
-//    {
-//        to->add(from->remove(ptr));
-//        to->__centroidvalidity = false;
-//        from->__centroidvalidity = false;
-//    }
+    template<typename T, int dim>
+    void Cluster<T, dim>::Move::perform()
+    {
+        to->add(from->remove(ptr));
+        to->__centroidvalidity = false;
+        from->__centroidvalidity = false;
+    }
 
     template<typename T, int dim>
     void Cluster<T, dim>::add(const T &point) {
@@ -387,23 +388,23 @@ namespace Clustering {
         __centroidvalidity = true;
     }
 
+    template<typename T, int dim>
+    void Cluster<T, dim>::pickPoints(int k, vector<T> &pointarray)
+    {
 
-//    void Cluster::pickPoints(int k, vector<Point> &pointarray)
-//    {
-//        LNodePtr current = points;
-//        int index = 0;
-//
-//        std::forward_list<Point>::iterator currentit = __points.begin();
-//
-//        while(currentit != __points.end() && index < k)
-//        {
-//
-//            pointarray[index] = *currentit;
-//            currentit++;
-//            index++;
-//        }
-//    }
-//
+        int index = 0;
+
+       typename std::forward_list<T>::iterator currentit = __points.begin();
+
+        while(currentit != __points.end() && index < k)
+        {
+
+            pointarray[index] = *currentit;
+            currentit++;
+            index++;
+        }
+    }
+
 
     template<typename T, int dim>
     double Cluster<T, dim>::intraClusterDistance()
@@ -552,5 +553,33 @@ namespace Clustering {
         return false;
     }
 
+    template<typename T, int dim>
+    void Cluster<T, dim>::computeMap()
+    {
 
+
+        typename std::forward_list<T>::iterator point1 = __points.begin();
+        typename std::forward_list<T>::iterator point2 = __points.begin();
+        point2++;
+
+        while(point1 != __points.end())
+        {
+            while(point2 != __points.end())
+            {
+                pointDistances[CantorFunction(point1->getid(), point2->getid())] = point1->distanceTo(*point2);
+                point2++;
+            }
+            point1++;
+            if(point1 == __points.end())
+            {
+                break;
+            }
+            point2 = point1;
+            point2++;
+        }
+
+    }
+
+    template<typename T, int dim>
+    std::unordered_map<unsigned int, double> Cluster<T, dim>::pointDistances;
 }

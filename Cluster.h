@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <algorithm>
 
+
+
 namespace Clustering {
 
     template<typename T, int dim>
@@ -43,6 +45,7 @@ namespace Clustering {
 
 
 
+
     template<typename T, int dim>
     class Cluster {
         int size;
@@ -60,22 +63,22 @@ namespace Clustering {
 
 
     public:
-        Cluster() : size(0), __id(generateid()), __centroid(pointdimensions = 5), __centroidvalidity(false), numberOfSuccesses(0), numberOfFailures(0) {};
+        Cluster() : size(0), __id(generateid()), __centroid(pointdimensions = 5), __centroidvalidity(false), numberOfSuccesses(0), numberOfFailures(0)  {};
         Cluster(unsigned int dimensions) : size(0), __id(generateid()), pointdimensions(dimensions), __centroid(dimensions), __centroidvalidity(false), numberOfSuccesses(0), numberOfFailures(0) {};
          //The big three: cpy ctor, overloaded operator=, dtor
 
         Cluster(const Cluster &);
         Cluster<T, dim> &operator=(const Cluster<T, dim> &);
         ~Cluster();
-//
-//        class Move{
-//            Point ptr;
-//            Cluster *to, *from;
-//        public:
-//            void perform();
-//            Move(const Point &point, Cluster *cfrom, Cluster *cto) : ptr(point), to(cto), from(cfrom)  {};
-//        };
-//
+
+        class Move{
+            T ptr;
+            Cluster<T, dim> *to, *from;
+        public:
+            void perform();
+            Move(const T &point, Cluster<T, dim> *cfrom, Cluster<T, dim> *cto) : ptr(point), to(cto), from(cfrom)  {};
+        };
+
         // Set functions: They allow calling c1.add(c2.remove(p));
         void add(const T &);
         const T &remove(const T &);
@@ -115,9 +118,9 @@ namespace Clustering {
         const T getcentroid();
 
         void computecentroid();
-//
-//        void pickPoints(int, std::vector<Point>&);
-//
+
+        void pickPoints(int k, std::vector<T> &pointarray);
+
         double intraClusterDistance();
 
         friend double interClusterDistance<T>(Cluster &c1, Cluster &c2);
@@ -151,32 +154,10 @@ namespace Clustering {
         }
 
 
-        void computeMap()
-        {
-
-           typename std::forward_list<T>::iterator point1 = __points.begin();
-           typename std::forward_list<T>::iterator point2 = __points.begin();
-            point2++;
-
-            while(point1 != __points.end())
-            {
-                while(point2 != __points.end())
-                {
-                    pointDistances[CantorFunction(point1->getid(), point2->getid())] = point1->distanceTo(*point2);
-                    point2++;
-                }
-                point1++;
-                if(point1 == __points.end())
-                {
-                    break;
-                }
-                point2 = point1;
-                point2++;
-            }
-
-        }
+        void computeMap();
 
     };
+
 
 
 }
