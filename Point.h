@@ -8,6 +8,7 @@
 
 
 
+
 namespace Clustering {
 
 
@@ -58,12 +59,13 @@ namespace Clustering {
         std::vector<T> coords;
         static constexpr char POINT_VALUE_DELIM = ',';
         unsigned int __id;
+        unsigned int __dim;
 
     public:
         // Constructors
         Point();                      // default constructor
         Point(int);    // constructor with a given number of dimensions
-        Point(int, T *);
+        Point(T *);
         Point(const Point<T, dim> &);
 
         // Destructor
@@ -114,7 +116,7 @@ namespace Clustering {
         void setValue(int, T);
 
         // Accessor methods
-        int getDims() const { return dim; }
+        int getDims() const { return __dim; }
 
         T distanceTo(Point &point1) const;
 

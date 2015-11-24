@@ -1,20 +1,28 @@
+#include "Exceptions.h"
 #include "Point.h"
 #include <cmath>
 #include <cassert>
 #include <iomanip>
-#include "Exceptions.h"
 #include <algorithm>
 #include <sstream>
 
+
 using namespace std;
 using namespace Clustering;
+
 
 
 // Default constructor
 // Initializes the point to (0.0, 0.0, 0.0)
 template<typename T, int dim>
 Point<T, dim>::Point() {
+    for (int i = 0; i < dim; i++)
+    {
+        coords.push_back(0);
+    }
 
+    __id = generateid();
+    __dim = dim;
 }
 
 // Constructor
@@ -30,9 +38,10 @@ Point<T, dim>::Point(int numofdemensions)
     }
 
     __id = generateid();
+    __dim = dim;
 }
 template<typename T, int dim>
-Point<T, dim>::Point(int numofdemensions, T *array)
+Point<T, dim>::Point(T *array)
 {
 
 
@@ -42,6 +51,7 @@ Point<T, dim>::Point(int numofdemensions, T *array)
     }
 
     __id = generateid();
+    __dim = dim;
 
 }
 
@@ -60,6 +70,7 @@ Point<T, dim>::Point(const Point<T, dim> &temp)
         }
 
         __id = temp.getid();
+        __dim = dim;
     }
 
 // Destructor
@@ -82,15 +93,18 @@ void Point<T, dim>::setValue(int index, T value)
     coords[index] = value;
 }
 
+
+
 template<typename T, int dim>
  Point<T, dim>& Point<T, dim>::operator=(const Point &rhs)
  {
      if(this == &rhs)
          return *this;
 
-//     try {
 
-//         if(dim != rhs.dim)
+
+
+//         if(__dim != rhs.__dim)
 //             throw DimensionalityMismatchEx(dim, "DimensionalityMismatchEx");
 
         typename vector<T>::iterator thisit = coords.begin();

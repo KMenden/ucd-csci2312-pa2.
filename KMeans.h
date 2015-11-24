@@ -26,7 +26,7 @@ public:
 
     double mindistance(Point<double, dim> &, Point<double, dim> );
 
-    double computeClusteringScore(std::vector<Cluster<Point<double, 5>, dim>>&);
+    double computeClusteringScore(std::vector<Cluster<Point<double, dim>, dim>>&);
 
     void run();
 };

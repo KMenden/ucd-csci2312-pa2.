@@ -1,5 +1,6 @@
 #include "Point.h"
 #include "Cluster.h"
+#include "KMeans.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -15,19 +16,20 @@ int main() {
 //    string line;
 //    ifstream csv("points.txt");
 
-    float temparray[5] = {3.0,5.4,8.7,9.0,11.2};
-    double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
-    double temparray3[5] = {22.0,65.1,12.87,103.0, 44};
+//    double temparray[5] = {3.0,5.4,8.7,9.0,11.2};
+//    double temparray2[5] = {6.0,3.1,2.87,22.0,7.2};
+//    double temparray3[5] = {22.0,65.1,12.87,103.0, 44};
+//    Point<double,5> test;
+//    Point<double,5> test2(temparray2);
+//    Point<double,5> test3(temparray3);
 
-    Point<float,5> testp(5, temparray);
-    Point<float,5> test2(testp);
-    Cluster<Point<float, 5>, 5> test(5);
-    Cluster<Point<float, 5>, 5> testc2(5);
-    test.add(testp);
-    test.add(test2);
 
-test += testp;
-    cout << test;
+KMeans<3, 5> KTest("points.txt");
+    KTest.run();
+
+
+
+
 //    *p4 == *p5;
 //    *p4 != *p5;
 //    *p4 < *p5;

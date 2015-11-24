@@ -193,11 +193,14 @@ namespace Clustering {
                 linestream >> *p;
 
                 ctemp.add(*p);
+
+                ++ctemp.numberOfSuccesses;
             }
             else
             {
                 cerr << "ERROR: Point " << line << " does not contain the number of dimensions as specified at KMeans object creation!" << endl;
                 cerr << "Point " << line << " was skipped and not added to the clustering algorithm" << endl;
+                ++ctemp.numberOfFailures;
             }
         }
 
@@ -409,6 +412,9 @@ namespace Clustering {
     template<typename T, int dim>
     double Cluster<T, dim>::intraClusterDistance()
     {
+        if(__points.empty())
+            return 0;
+
         if(pointDistances.empty()) {
            typename std::forward_list<T>::iterator firstit = __points.begin();
            typename std::forward_list<T>::iterator secondit = __points.begin();
@@ -556,7 +562,8 @@ namespace Clustering {
     template<typename T, int dim>
     void Cluster<T, dim>::computeMap()
     {
-
+        if(__points.empty())
+            return;
 
         typename std::forward_list<T>::iterator point1 = __points.begin();
         typename std::forward_list<T>::iterator point2 = __points.begin();

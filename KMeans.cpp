@@ -80,7 +80,7 @@ void KMeans<k, dim>::run()
                 }
                 if (clusterindex != clusterarray[i].getid() - 1 && checkswap)
                 {
-                  typename Cluster<Point<double, 5>, dim>::Move moveclusters(*currentit, &clusterarray[i], &clusterarray[clusterindex]);
+                  typename Cluster<Point<double, dim>, dim>::Move moveclusters(*currentit, &clusterarray[i], &clusterarray[clusterindex]);
                     moveclusters.perform();
                     currentit = clusterarray[i].getItBegin();
                     swap = true;
@@ -113,15 +113,19 @@ void KMeans<k, dim>::run()
     {
         output << clusterarray[i];
     }
+    output << "Number of Succesful imports: " << point_space.numberImported() << endl;
+    output << "Number of Failed imports: " << point_space.numberFailed() << endl;
     for (int i = 0; i < k; i++)
     {
         cout << clusterarray[i];
     }
+    cout <<"Number of Succesful imports: " << point_space.numberImported() << endl;
+    cout << "Number of Failed imports: " << point_space.numberFailed() << endl;
     output.close();
 }
 
 template<int k, int dim>
-double KMeans<k, dim>::computeClusteringScore(vector<Cluster<Point<double, 5>, dim>> &clusterarray)
+double KMeans<k, dim>::computeClusteringScore(vector<Cluster<Point<double, dim>, dim>> &clusterarray)
 {
         double dIn = 0;
 
