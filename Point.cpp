@@ -1,531 +1,302 @@
-#include "Exceptions.h"
 #include "Point.h"
 #include <cmath>
 #include <cassert>
 #include <iomanip>
-#include <algorithm>
-#include <sstream>
-
 
 using namespace std;
 using namespace Clustering;
 
 
-
 // Default constructor
 // Initializes the point to (0.0, 0.0, 0.0)
-template<typename T, int dim>
-Point<T, dim>::Point() {
-    for (int i = 0; i < dim; i++)
-    {
-        coords.push_back(0);
-    }
+Point::Point() {
 
-    __id = generateid();
-    __dim = dim;
 }
 
 // Constructor
-template<typename T, int dim>
-Point<T, dim>::Point(int numofdemensions)
+
+Point::Point(int numofdemensions)
 {
 
+       dim = numofdemensions;
+      coords = new double[dim];
+    for (int i = 0; i < dim; i++)
+    {
+        coords[i] = 0;
+    }
+}
 
+Point::Point(int numofdemensions, double *array)
+{
+    dim = numofdemensions;
+    coords = new double[dim];
 
     for (int i = 0; i < dim; i++)
     {
-        coords.push_back(0);
+        coords[i] = array[i];
     }
-
-    __id = generateid();
-    __dim = dim;
-}
-template<typename T, int dim>
-Point<T, dim>::Point(T *array)
-{
-
-
-    for (int i = 0; i < dim; i++)
-    {
-        coords.push_back(array[i]);
-    }
-
-    __id = generateid();
-    __dim = dim;
 
 }
 
-template<typename T, int dim>
-Point<T, dim>::Point(const Point<T, dim> &temp)
+Point::Point(const Point &temp)
     {
-
-
-      typename  vector<T>::iterator thisit = coords.begin();
-      typename  vector<T>::const_iterator tempit = temp.coords.begin();
-
+        dim = temp.dim;
+        coords = new double[dim];
         for (int i = 0; i < dim; i++)
         {
-            coords.push_back(*tempit);
-            tempit++;
+            coords[i] = temp.coords[i];
         }
-
-        __id = temp.getid();
-        __dim = dim;
     }
 
 // Destructor
 //Releases the memory occupied by the coords pointer
-template<typename T, int dim>
-Point<T, dim>::~Point()
+Point::~Point()
 {
-  coords.clear();
-}
-template<typename T, int dim>
-T Point<T, dim>::getValue(int index) const
-{
-    return coords[index];
-
+  delete[] coords;
 }
 
-template<typename T, int dim>
-void Point<T, dim>::setValue(int index, T value)
+double Point::getValue(int index) const
 {
-    coords[index] = value;
+    return coords[index - 1];
+
 }
 
 
+void Point::setValue(int index, double value)
+{
+    coords[index - 1] = value;
+}
 
-template<typename T, int dim>
- Point<T, dim>& Point<T, dim>::operator=(const Point &rhs)
+ Point& Point::operator=(const Point &rhs)
  {
      if(this == &rhs)
          return *this;
 
+     dim = rhs.dim;
 
+     for(int i = 0; i < dim; i++)
+     {
 
+         coords[i] = rhs.coords[i];
+     }
 
-//         if(__dim != rhs.__dim)
-//             throw DimensionalityMismatchEx(dim, "DimensionalityMismatchEx");
-
-        typename vector<T>::iterator thisit = coords.begin();
-         typename vector<T>::const_iterator tempit = rhs.coords.begin();
-
-
-         for (int i = 0; i < dim; i++) {
-
-             *thisit = *tempit;
-             thisit++;
-             tempit++;
-         }
-//     }
-//     catch(DimensionalityMismatchEx e)
-//     {
-//         cerr << "ERROR:Exception " << e.getName() << " detected with assignment operator = with point " << *this << "and " << rhs << endl;
-//         cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//     }
      return *this;
  }
 
 namespace Clustering {
 
-template<typename T,int dim>
-    bool operator==(const Point<T,dim> &lhs, const Point<T,dim> &rhs) {
+    bool operator==(const Point &lhs, const Point &rhs) {
         bool result;
 
-        if (lhs.__id != rhs.__id) {
-            return false;
+        for (int i = 0; i < lhs.getDims(); i++) {
+            if (lhs.coords[i] == rhs.coords[i])
+                result = true;
+            else {
+                result = false;
+                return result;
+            }
         }
 
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
-
-          typename vector<T>::const_iterator thisit = lhs.coords.begin();
-            typename vector<T>::const_iterator tempit = rhs.coords.begin();
-            for (int i = 0; i < lhs.getDims(); i++) {
-                if (*thisit == *tempit)
-                    result = true;
-                else {
-                    result = false;
-                    return result;
-                }
-                thisit++;
-                tempit++;
-            }
-
-//        catch (DimensionalityMismatchEx e) {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator == with point " << lhs <<
-//            "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//        }
         return result;
     }
 
-    template<typename T,int dim>
-    bool operator!=(const Point<T,dim> &lhs, const Point<T,dim> &rhs) {
+
+    bool operator!=(const Point &lhs, const Point &rhs) {
         bool result;
 
-        if(lhs.__id == rhs.__id)
-        {
-            return false;
+        for (int i = 0; i < lhs.getDims(); i++) {
+            if (lhs.coords[i] == rhs.coords[i])
+                result = false;
+            else {
+                result = true;
+                return result;
+            }
         }
 
-//        try {
-//            if(lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
-
-           typename vector<T>::const_iterator thisit = lhs.coords.begin();
-           typename vector<T>::const_iterator tempit = rhs.coords.begin();
-            for (int i = 0; i < lhs.getDims(); i++) {
-                if (*thisit == *tempit)
-                    result = false;
-                else {
-                    result = true;
-                    return result;
-                }
-                thisit++;
-                tempit++;
-            }
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator != with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//        }
         return result;
     }
 
-    template<typename T,int dim>
-    bool operator<(const Point<T,dim> &lhs, const Point<T,dim> &rhs) {
+    bool operator<(const Point &lhs, const Point &rhs) {
         int index = 0;
-       typename vector<T>::const_iterator thisit = lhs.coords.begin();
-       typename vector<T>::const_iterator tempit = rhs.coords.begin();
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
-            for (int i = 0; i < lhs.getDims(); i++) {
-                if (*thisit == *tempit) {
-                    index++;
-                    thisit++;
-                    tempit++;
-                }
-                else
-                    break;
-            }
 
+        for (int i = 0; i < lhs.getDims(); i++) {
+            if (lhs.coords[i] == rhs.coords[i])
+                index++;
+            else
+                break;
+        }
+
+        if (lhs.coords[index] < rhs.coords[index])
+            return true;
+        else
+            return false;
+    }
+
+    bool operator>(const Point &lhs, const Point &rhs) {
+        int index = 0;
+
+        for (int i = 0; i < lhs.getDims(); i++) {
+            if (lhs.coords[i] == rhs.coords[i])
+                index++;
+            else
+                break;
+        }
+
+        if (lhs.coords[index] > rhs.coords[index])
+            return true;
+        else
+            return false;
+    }
+
+    bool operator<=(const Point &lhs, const Point &rhs) {
+        int index = 0;
+        bool same;
+        for (int i = 0; i < lhs.getDims(); i++) {
+            if (lhs.coords[i] == rhs.coords[i]) {
+                index++;
+                same = true;
+            }
+            else
+                same = false;
+            break;
+        }
+        if (same == true)
+            return true;
+        else {
             if (lhs.coords[index] < rhs.coords[index])
                 return true;
             else
                 return false;
-
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator < with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//            return false;
-//        }
+        }
     }
 
-    template<typename T,int dim>
-    bool operator>(const Point<T,dim> &lhs, const Point<T,dim> &rhs) {
+    bool operator>=(const Point &lhs, const Point &rhs) {
         int index = 0;
-       typename vector<T>::const_iterator thisit = lhs.coords.begin();
-       typename vector<T>::const_iterator tempit = rhs.coords.begin();
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
-
-            for (int i = 0; i < lhs.getDims(); i++) {
-                if (*thisit == *tempit) {
-                    tempit++;
-                    thisit++;
-                    index++;
-                }
-                else
-                    break;
+        bool same;
+        for (int i = 0; i < lhs.getDims(); i++) {
+            if (lhs.coords[i] == rhs.coords[i]) {
+                index++;
+                same = true;
             }
-
-            if (*thisit > *tempit)
+            else
+                same = false;
+            break;
+        }
+        if (same == true)
+            return true;
+        else {
+            if (lhs.coords[index] > rhs.coords[index])
                 return true;
             else
                 return false;
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator > with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//            return false;
-//        }
+        }
     }
 
-    template<typename T,int dim>
-    bool operator<=(const Point<T,dim> &lhs, const Point<T,dim> &rhs) {
-        int index = 0;
-        bool same;
-
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
-
-           typename vector<T>::const_iterator thisit = lhs.coords.begin();
-           typename vector<T>::const_iterator tempit = rhs.coords.begin();
-            for (int i = 0; i < lhs.getDims(); i++) {
-                if (*thisit == *tempit) {
-                    index++;
-                    thisit++;
-                    tempit++;
-                    same = true;
-                }
-                else
-                    same = false;
-                break;
-            }
-            if (same == true)
-                return true;
-            else {
-                if (*thisit < *tempit)
-                    return true;
-                else
-                    return false;
-            }
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator <= with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//            return false;
-//        }
-    }
-
-    template<typename T,int dim>
-    bool operator>=(const Point<T,dim> &lhs, const Point<T,dim> &rhs) {
-        int index = 0;
-        bool same;
-
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
-
-           typename vector<T>::const_iterator thisit = lhs.coords.begin();
-           typename vector<T>::const_iterator tempit = rhs.coords.begin();
-
-            for (int i = 0; i < lhs.getDims(); i++) {
-                if (*thisit == *tempit) {
-                    thisit++;
-                    tempit++;
-                    index++;
-                    same = true;
-                }
-                else
-                    same = false;
-                break;
-            }
-            if (same == true)
-                return true;
-            else {
-                if (*thisit > *tempit)
-                    return true;
-                else
-                    return false;
-            }
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with comparison operator >= with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//            return false;
-//        }
-    }
-
-    template<typename T,int dim>
-    Point<T,dim> &operator+=(Point<T,dim> &lhs, const Point<T,dim> &rhs)
+    Point &operator+=(Point &lhs, const Point &rhs)
     {
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+        for(int i = 0; i < lhs.dim; i++)
+        {
+            lhs.coords[i] += rhs.coords[i];
+        }
 
-           typename vector<T>::iterator thisit = lhs.coords.begin();
-           typename vector<T>::const_iterator tempit = rhs.coords.begin();
-
-            for (int i = 0; i < dim; i++) {
-                *thisit += *tempit;
-                thisit++;
-                tempit++;
-            }
-
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator += with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//
-//        }
         return lhs;
 
     }
 
-    template<typename T,int dim>
-    Point<T,dim> &operator-=(Point<T,dim> &lhs, const Point<T,dim> &rhs)
+
+    Point &operator-=(Point &lhs, const Point &rhs)
     {
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+        for(int i = 0; i < lhs.dim; i++)
+        {
+            lhs.coords[i] -= rhs.coords[i];
+        }
 
-           typename vector<T>::iterator thisit = lhs.coords.begin();
-           typename vector<T>::const_iterator tempit = rhs.coords.begin();
-
-            for (int i = 0; i < lhs.dim; i++) {
-                lhs.coords[i] -= rhs.coords[i];
-                thisit++;
-                tempit++;
-            }
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator -= with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//        }
         return lhs;
 
     }
 
-    template<typename T,int dim>
-    const Point<T,dim> operator+(const Point<T,dim> &lhs, const Point<T,dim> &rhs)
+
+    const Point operator+(const Point &lhs, const Point &rhs)
     {
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+        Point result(lhs.dim);
 
-            Point<T,dim> result(lhs.dim);
+        for(int i = 0; i < lhs.dim; i++)
+        {
+           result.coords[i] = lhs.coords[i] + rhs.coords[i];
+        }
 
-        typename vector<T>::const_iterator thisit = lhs.coords.begin();
-        typename vector<T>::const_iterator tempit = rhs.coords.begin();
-        typename vector<T>::iterator resultit = result.coords.begin();
-
-
-            for (int i = 0; i < lhs.dim; i++) {
-                *resultit = *thisit + *tempit;
-                thisit++;
-                tempit++;
-                resultit++;
-            }
-
-            return result;
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator + with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//            Point result(lhs.dim);
-//            return result;
-//        }
+        return result;
 
 
     }
 
-    template<typename T,int dim>
-    const Point<T,dim> operator-(const Point<T,dim> &lhs, const Point<T,dim> &rhs)
+    const Point operator-(const Point &lhs, const Point &rhs)
     {
-//        try {
-//            if (lhs.dim != rhs.dim)
-//                throw DimensionalityMismatchEx(lhs.dim, "DimensionalityMismatchEx");
+        Point result(lhs.dim);
 
-            Point<T,dim> result(lhs.dim);
+        for(int i = 0; i < lhs.dim; i++)
+        {
+            result.coords[i] = lhs.coords[i] - rhs.coords[i];
+        }
 
-        typename  vector<T>::const_iterator thisit = lhs.coords.begin();
-        typename  vector<T>::const_iterator tempit = rhs.coords.begin();
-        typename vector<T>::iterator resultit = result.coords.begin();
+        return result;
 
-            for(int i = 0; i < lhs.dim; i++)
-            {
-                *resultit = *thisit - *tempit;
-                thisit++;
-                tempit++;
-                resultit++;
-            }
-
-            return result;
-
-
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with arithmetic operator - with point " << lhs << "and " << rhs << endl;
-//            cerr << "Dimensionality for point " << rhs << "must be " << e.getData() << endl;
-//            Point result(lhs.dim);
-//            return result;
-//        }
 
     }
 
-    template<typename T, int dim>
-    Point<T, dim> &Point<T, dim>::operator*=(T number) {
-        typename vector<T>::iterator thisit = coords.begin();
-
-        for (int i = 0; i < dim; i++) {
-            *thisit *= number;
-            thisit++;
+    Point &Point::operator*=(double number)
+    {
+        for(int i = 0; i < dim; i++)
+        {
+            coords[i] *= number;
         }
 
         return *this;
     }
 
-    template<typename T, int dim>
-    Point<T, dim> &Point<T, dim>::operator/=(T number) {
-        assert(number != 0);
+    Point &Point::operator/=(double number)
+    {
+        assert( number != 0);
 
-        typename vector<T>::iterator thisit = coords.begin();
-
-        for (int i = 0; i < dim; i++) {
-            *thisit /= number;
-            thisit++;
+        for(int i = 0; i < dim; i++)
+        {
+            coords[i] /= number;
         }
 
     }
 
-    template<typename T, int dim>
-    const Point<T, dim> Point<T, dim>::operator*(T number) const {
-        Point<T, dim> result(dim);
+    const Point Point::operator*(double number) const
+    {
+        Point result(dim);
 
-        typename vector<T>::const_iterator thisit = coords.begin();
-        typename vector<T>::iterator resultit = result.coords.begin();
-
-        for (int i = 0; i < dim; i++) {
-            *resultit = *thisit * number;
-            resultit++;
-            thisit++;
+        for(int i = 0; i < dim; i++)
+        {
+            result.coords[i] = coords[i] * number;
         }
 
         return result;
 
     }
 
-    template<typename T, int dim>
-    const Point<T, dim> Point<T, dim>::operator/(T number) const {
-        Point<T, dim> result(dim);
+    const Point Point::operator/(double number) const
+    {
+        Point result(dim);
 
-        typename vector<T>::const_iterator thisit = coords.begin();
-        typename vector<T>::iterator resultit = result.coords.begin();
-        for (int i = 0; i < dim; i++) {
-            *resultit = *thisit / number;
-            resultit++;
-            thisit++;
+        for(int i = 0; i < dim; i++)
+        {
+            result.coords[i] = coords[i] / number;
         }
 
         return result;
 
     }
 
-    template<typename T, int dim>
-    std::ostream &operator<<(std::ostream &output, const Point<T, dim> &point)
+    std::ostream &operator<<(std::ostream &output, const Point &point)
     {
 
-        typename vector<T>::const_iterator thisit = point.coords.begin();
         for (int i = 0; i < point.getDims(); i++) {
 
-            output << *thisit << ", ";
-            thisit++;
+            output << point.coords[i] << ",";
 
         }
 
@@ -533,49 +304,28 @@ template<typename T,int dim>
 
     }
 
-    template<typename T, int dim>
-    std::istream &operator>>(std::istream &input, Point<T, dim> &point)
+    std::istream &operator>>(std::istream &input, Point &point)
     {
 
         string value;
-        T d;
+        double d;
         int i = 0;
-        long int countDelim;
-        string pointline;
 
 
-        getline(input, pointline);
+        while (getline(input, value, ',')) {
+            d = stod(value);
 
-        stringstream valueline(pointline);
+            cout << "Value: # " << i << "   " << d << endl;
 
+            point.setValue(++i, d);
+        }
 
-        countDelim = count(pointline.begin(), pointline.end(), ',') + 1;
-
-//        try
-//        {
-//            if (point.dim != countDelim)
-//                throw DimensionalityMismatchEx(point.dim, "DimensionalityMismatchEx");
-
-            while (getline(valueline, value, ','))
-            {
-                d = stod(value);
-
-                cout << "Value: " << d << endl;
-
-                point.setValue(i++, d);
-            }
-
-//        catch(DimensionalityMismatchEx e)
-//        {
-//            cerr << "ERROR:Exception " << e.getName() << " detected with extraction operator using point " << point << endl;
-//            cerr << "Point dimensionality (" << point.dim << ") is mismatched with number of inputs (" << countDelim << ")" << endl;
-//        }
 
         return input;
     }
 
 
-
+}
 
 // Mutator methods
 // Change the values of private member variables
@@ -585,43 +335,19 @@ template<typename T,int dim>
 // Return the current values of private member variables
 
 
-    template<typename T, int dim>
-    T Point<T, dim>::distanceTo(Point &point1) const {
-        typename vector<T>::const_iterator thisit = coords.begin();
-        typename vector<T>::const_iterator pointit = point1.coords.begin();
 
-
-        T sum = 0;
-        T difference = 0;
-        for (int i = 0; i < dim; i++) {
-            difference = (pow(*thisit - *pointit, 2));
-            sum += difference;
-            thisit++;
-            pointit++;
-        }
-
-        sqrt(sum);
-
-        return sum;
+double Point::distanceTo(Point &point1)
+{
+    assert(dim == point1.dim);
+    double sum = 0;
+    double difference = 0;
+    for(int i = 0; i < dim; i++)
+    {
+        difference = (pow(coords[i] - point1.coords[i], 2));
+        sum += difference;
     }
 
-    template<typename T, int dim>
-    unsigned int Point<T, dim>::generateid() {
-        static unsigned int tempidpoint = 0;
-        tempidpoint++;
-        return tempidpoint;
-    }
+   sum = sqrt(sum);
 
-    template<typename T, int dim>
-    void Point<T, dim>::rewindIdGen() {
-        static unsigned int tempidpoint = 0;
-        tempidpoint--;
-        return;
-    }
-
-    template<typename T, int dim>
-    unsigned int Point<T, dim>::getid() const {
-        return __id;
-    }
-
+  return sum;
 }

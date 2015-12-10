@@ -2,167 +2,93 @@
 #define CLUSTERING_CLUSTER_H
 
 #include "Point.h"
-#include <vector>
-#include <forward_list>
-#include <unordered_map>
-#include <algorithm>
-
-
 
 namespace Clustering {
 
-    template<typename T, int dim>
-    class Cluster;
+    typedef Point *PointPtr;
+    typedef struct LNode *LNodePtr;
 
-    template<typename T, int dim>
-    double interClusterEdges(const Cluster<T, dim> &c1, const Cluster<T, dim> &c2);
+//    struct LNode;
+//    typedef LNode *LNodePtr;
 
-    template<typename T, int dim>
-    double interClusterDistance(Cluster<T, dim> &c1, Cluster<T, dim> &c2);
-
-    template<typename T, int dim>
-     std::ostream &operator<<(std::ostream &, const Cluster<T, dim> &);
-
-    template<typename T, int dim>
-    std::istream &operator>>(std::istream &, Cluster<T, dim> &);
-
-    template<typename T,int dim>
-    const Cluster<T, dim> operator+(const Cluster<T, dim> &lhs, const Cluster<T,dim> &rhs);\
-
-    template<typename T, int dim>
-    const Cluster<T, dim> operator-(const Cluster<T, dim> &lhs, const Cluster<T, dim> &rhs);
-
-    template<typename T,int dim>
-    const Cluster<T, dim> operator+(const Cluster<T, dim> &lhs, const T &rhs);
-
-    template<typename T,int dim>
-    const Cluster<T, dim> operator-(const Cluster<T, dim> &lhs, const T &rhs);
-
-    template<typename T, int dim>
-    bool operator==(const Cluster<T, dim> &lhs, const Cluster<T, dim> &rhs);
+    struct LNode {
+        PointPtr p;
+        LNodePtr next;
+    };
 
 
 
-
-
-
-    template<typename T, int dim>
     class Cluster {
         int size;
-        std::forward_list<T> __points;
+        LNodePtr points;
         bool __release_points;
         unsigned int __id;
         static unsigned int __idGenerator;
-        T __centroid;
         bool __centroidvalidity;
-        unsigned int pointdimensions;
-        int numberOfSuccesses;
-        int numberOfFailures;
-
-        static std::unordered_map<unsigned int, double> pointDistances;
-
 
     public:
-        Cluster() : size(0), __id(generateid()), __centroid(pointdimensions = 5), __centroidvalidity(false), numberOfSuccesses(0), numberOfFailures(0)  {};
-        Cluster(unsigned int dimensions) : size(0), __id(generateid()), pointdimensions(dimensions), __centroid(dimensions), __centroidvalidity(false), numberOfSuccesses(0), numberOfFailures(0) {};
-         //The big three: cpy ctor, overloaded operator=, dtor
+        Cluster() : size(0), points(nullptr), __id(1) {};
 
+        // The big three: cpy ctor, overloaded operator=, dtor
         Cluster(const Cluster &);
-        Cluster<T, dim> &operator=(const Cluster<T, dim> &);
+        Cluster &operator=(const Cluster &);
         ~Cluster();
 
         class Move{
-            T ptr;
-            Cluster<T, dim> *to, *from;
+            PointPtr ptr;
+            Cluster *to, *from;
         public:
             void perform();
-            Move(const T &point, Cluster<T, dim> *cfrom, Cluster<T, dim> *cto) : ptr(point), to(cto), from(cfrom)  {};
+            Move(const PointPtr &, Cluster *, Cluster *);
         };
 
         // Set functions: They allow calling c1.add(c2.remove(p));
-        void add(const T &);
-        const T &remove(const T &);
-//
-//        // Overloaded operators
-//
-//        // IO
-        friend std::ostream &operator<< <T>(std::ostream &, const Cluster &);
-        friend std::istream &operator>> <T>(std::istream &, Cluster &);
+        void add(const PointPtr &);
+        const PointPtr &remove(const PointPtr &);
+
+        // Overloaded operators
+
+        // IO
+        friend std::ostream &operator<<(std::ostream &, const Cluster &);
+        friend std::istream &operator>>(std::istream &, Cluster &);
 
         // Set-preserving operators (do not duplicate points in the space)
         // - Friends
-        friend bool operator==<T>(const Cluster &lhs, const Cluster &rhs);
+        friend bool operator==(const Cluster &lhs, const Cluster &rhs);
 
         // - Members
-        Cluster<T, dim> &operator+=(const Cluster &rhs); // union
-        Cluster<T, dim> &operator-=(const Cluster &rhs); // (asymmetric) difference
+        Cluster &operator+=(const Cluster &rhs); // union
+        Cluster &operator-=(const Cluster &rhs); // (asymmetric) difference
 
-        Cluster<T, dim> &operator+=(const T &rhs); // add point
-        Cluster<T, dim> &operator-=(const T &rhs); // remove point
+        Cluster &operator+=(const Point &rhs); // add point
+        Cluster &operator-=(const Point &rhs); // remove point
 
         // Set-destructive operators (duplicate points in the space)
         // - Friends
-        friend const Cluster operator+<T>(const Cluster &lhs, const Cluster &rhs);
-        friend const Cluster operator-<T>(const Cluster &lhs, const Cluster &rhs);
+        friend const Cluster operator+(const Cluster &lhs, const Cluster &rhs);
+        friend const Cluster operator-(const Cluster &lhs, const Cluster &rhs);
 
-        friend const Cluster operator+<T>(const Cluster &lhs, const T &rhs);
-        friend const Cluster operator-<T>(const Cluster &lhs, const T &rhs);
+        friend const Cluster operator+(const Cluster &lhs, const PointPtr &rhs);
+        friend const Cluster operator-(const Cluster &lhs, const PointPtr &rhs);
 
-        static unsigned int generateid();
         unsigned int getid()const;
 
-        int getsize();
+        int getSize();
 
-        void setcentroid(const T &);
-//
-        const T getcentroid();
+        void setcentroid(const Point &);
+
+        const Point getcentroid();
 
         void computecentroid();
 
-        void pickPoints(int k, std::vector<T> &pointarray);
-
-        double intraClusterDistance();
-
-        friend double interClusterDistance<T>(Cluster &c1, Cluster &c2);
-
-        int getClusterEdges();
-
-        friend double interClusterEdges<T>(const Cluster &c1, const Cluster &c2);
-
-        void setPointDemensions(unsigned int);
-
-        bool checkValidCentroid() {return __centroidvalidity;}
-
-        bool contains(const T &);
-
-        int numberImported() {return numberOfSuccesses;}
-
-        int numberFailed(){return numberOfFailures;}
-
-       typename std::forward_list<T>::iterator getItBegin() {return __points.begin();}
-
-       typename std::forward_list<T>::iterator getItEnd() { return __points.end(); }
-
-        unsigned int CantorFunction(unsigned int id1, unsigned int id2)
-        {
-            if(id1 > id2)
-            {
-                std::swap(id1, id2);
-            }
-
-            return std::hash<std::size_t>()((id1 + id2) * (id1 + id2 + 1) / 2 + id2);
-        }
+        void pickPoints(int, Point []);
 
 
-        void computeMap();
 
     };
 
 
 
 }
-
-
-#include "Cluster.cpp"
 #endif //CLUSTERING_CLUSTER_H
 
