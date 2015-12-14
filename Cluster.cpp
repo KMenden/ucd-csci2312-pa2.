@@ -2,16 +2,22 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
+#include <algorithm>
 
 using namespace Clustering;
 using namespace std;
 
 namespace Clustering {
 
-    Cluster::Cluster(const Cluster &other)
+    Cluster::Cluster(const Cluster &other) : __centroid(other.getCentroid()), pointdimensions(other.getId()), __centroidvalidity(false)
     {
+        __id = other.getId();
+
         if(other.points == nullptr)
         {
+            size = other.size;
+            points = nullptr;
             return;
         }
         size = other.size;
@@ -33,7 +39,7 @@ namespace Clustering {
                 return;
             }
         }
-        __id = 1;
+
     }
 
     Cluster& Cluster::operator=(const Cluster &other)
@@ -42,6 +48,7 @@ namespace Clustering {
         {
             if(other.points == nullptr)
             {
+                __id = other.getId();
                 return *this;
             }
             size = other.size;
@@ -178,6 +185,8 @@ namespace Clustering {
     void Cluster::Move::perform()
     {
         to->add(from->remove(ptr));
+        to->__centroidvalidity = false;
+        from->__centroidvalidity = false;
     }
 
     void Cluster::add(const PointPtr &point) {
@@ -187,6 +196,7 @@ namespace Clustering {
             points->p = point;
             points->next = nullptr;
             size++;
+            __centroidvalidity = false;
             return;
         }
 
@@ -202,6 +212,7 @@ namespace Clustering {
                     points->p = point;
                     points->next = current;
                     size++;
+                    __centroidvalidity = false;
                     return;
                 }
                 else
@@ -210,6 +221,7 @@ namespace Clustering {
                     prev->next->p = point;
                     prev->next->next = current;
                     size++;
+                    __centroidvalidity = false;
                     return;
                 }
             }
@@ -227,6 +239,7 @@ namespace Clustering {
             prev->next->p = point;
             prev->next->next = nullptr;
             size++;
+            __centroidvalidity = false;
             return;
         }
 
@@ -250,6 +263,7 @@ namespace Clustering {
                     points = prev->next;
                     size--;
                     delete current;
+                    __centroidvalidity = false;
                     return point;
                 }
                 else
@@ -257,6 +271,7 @@ namespace Clustering {
                     prev->next = current->next;
                     delete current;
                     size--;
+                    __centroidvalidity = false;
                     return point;
                 }
             }
@@ -276,7 +291,7 @@ namespace Clustering {
             os << "The list is empty" << std::endl;
         }
         else {
-            os << *(ctemp.points->p) << std::endl;
+            os << *(ctemp.points->p) << ": " << ctemp.getId() << std::endl;
             if (ctemp.points->next == nullptr)
             {
                 return os;
@@ -287,7 +302,7 @@ namespace Clustering {
                 cursor = ctemp.points;
                 do
                 {
-                    os << *(cursor->next->p) << std::endl;
+                    os << *(cursor->next->p) << ": " << ctemp.getId() << std::endl;
                     cursor = cursor->next;
 
                 }while(cursor->next != nullptr);
@@ -309,18 +324,23 @@ namespace Clustering {
             stringstream linestream(line);
             string value;
             double d;
+            long int countDelim;
 
-//            while(getline(pointdim, temp, ','))
+            countDelim = count(line.begin(), line.end(), ',') + 1;
+
+            if(countDelim == ctemp.pointdimensions)
+            {
+                PointPtr p = new Point(ctemp.pointdimensions);
+
+                linestream >> *p;
+
+                ctemp.add(p);
+            }
+//            else
 //            {
-//                pointdims++;
+//                cerr << "ERROR: Point " << line << " does not contain the number of dimensions as specified at KMeans object creation!" << endl;
+//                cerr << "Point " << line << " was skipped and not added to the clustering algorithm" << endl;
 //            }
-//            pointdims++;
-
-            PointPtr p = new Point(5);
-
-            linestream >> *p;
-
-            ctemp.add(p);
         }
 
     }
@@ -465,6 +485,7 @@ namespace Clustering {
                     points = prev->next;
                     size--;
                     delete current;
+                    __centroidvalidity = false;
                     return *this;
                 }
                 else
@@ -472,6 +493,7 @@ namespace Clustering {
                     prev->next = current->next;
                     delete current;
                     size--;
+                    __centroidvalidity = false;
                     return *this;
                 }
             }
@@ -521,7 +543,14 @@ namespace Clustering {
         return result;
     }
 
-   unsigned int Cluster::getid()const {
+    unsigned int Cluster::generateid()
+    {
+        static unsigned int tempid = 0;
+        tempid++;
+        return tempid;
+    }
+
+   unsigned int Cluster::getId()const {
         return __id;
     }
 
@@ -530,18 +559,159 @@ namespace Clustering {
         return size;
     }
 
+    void Cluster::setCentroid(const Point &point)
+    {
+            __centroid = point;
+        __centroidvalidity = true;
+        return;
+    }
 
-    void Cluster::pickPoints(int k, Point pointarray[])
+    const Point Cluster::getCentroid() const
+    {
+        return __centroid;
+    }
+
+    void Cluster::computeCentroid()
+    {
+        LNodePtr np = points;
+        Point p(pointdimensions);
+        while(np != nullptr)
+        {
+            p += *np->p / size;
+            np = np->next;
+        }
+        __centroid = p;
+        __centroidvalidity = true;
+    }
+
+
+    void Cluster::pickPoints(unsigned int k, PointPtr *pointArray)
     {
         LNodePtr current = points;
         int index = 0;
 
-        while(current != nullptr)
+        while(current != nullptr && index < k)
         {
-            pointarray[index] = *(current->p);
-            current = current->next;
+
+                pointArray[index] = current->p;
+                current = current->next;
+                index++;
+
+
+        }
+    }
+
+
+    double Cluster::intraClusterDistance() const
+    {
+        if(points == nullptr)
+        {
+            return 0.0;
+        }
+        LNodePtr firstpoint = points;
+        LNodePtr secondpoint = points;
+        double distance;
+        double sum = 0;
+
+        while(firstpoint != nullptr)
+        {
+            while(secondpoint != nullptr)
+            {
+              distance = firstpoint->p->distanceTo(*(secondpoint->p));
+                sum += distance;
+                secondpoint = secondpoint->next;
+            }
+            secondpoint = points;
+            firstpoint = firstpoint->next;
+        }
+        sum /= 2;
+        return sum;
+
+    }
+
+    double interClusterDistance(const Cluster &c1, const Cluster &c2)
+    {
+        LNodePtr c1current = c1.points;
+         LNodePtr c2current = c2.points;
+        double distance;
+        double sum;
+
+        if(c1current == nullptr || c2current == nullptr)
+        {
+            return 0.0;
+        }
+
+        while(c1current != nullptr)
+        {
+            while(c2current != nullptr)
+            {
+                distance = c1current->p->distanceTo(*(c2current->p));
+                sum += distance;
+                c2current = c2current->next;
+            }
+            c2current = c2.points;
+            c1current = c1current->next;
+        }
+        return sum;
+    }
+
+    int Cluster::getClusterEdges()
+    {
+        int edges = 0;
+
+        edges = (size *(size - 1)) / 2;
+
+        return edges;
+    }
+
+    double interClusterEdges(const Cluster &c1, const Cluster &c2)
+    {
+        int edges = 0;
+
+        edges = c1.size * c2.size;
+
+        return edges;
+    }
+
+    void Cluster::setPointDemensions(unsigned int value)
+    {
+        pointdimensions = value;
+    }
+
+    const PointPtr &Cluster::operator[](unsigned int u) const
+    {
+        LNodePtr temp = points;
+        int index = 0;
+
+        while(index < u && temp != nullptr)
+        {
+            temp = temp->next;
             index++;
         }
+
+        return temp->p;
+    }
+
+    bool Cluster::contains(const PointPtr &ptr) const
+    {
+        LNodePtr temp = points;
+
+        while(temp != nullptr)
+        {
+            if(temp->p == ptr)
+            {
+                return true;
+            }
+            else
+            {
+                if(temp != nullptr)
+                {
+                    temp = temp->next;
+                }
+            }
+        }
+
+        return false;
     }
 
 }

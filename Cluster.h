@@ -2,7 +2,8 @@
 #define CLUSTERING_CLUSTER_H
 
 #include "Point.h"
-
+#include <vector>
+//
 namespace Clustering {
 
     typedef Point *PointPtr;
@@ -24,11 +25,13 @@ namespace Clustering {
         bool __release_points;
         unsigned int __id;
         static unsigned int __idGenerator;
+        Point __centroid;
         bool __centroidvalidity;
+        unsigned int pointdimensions;
 
     public:
-        Cluster() : size(0), points(nullptr), __id(1) {};
-
+        Cluster() : size(0), points(nullptr), __id(generateid()), __centroid(pointdimensions = 5), __centroidvalidity(false) {};
+        Cluster(unsigned int dimensions) : size(0), points(nullptr), __id(generateid()), pointdimensions(dimensions), __centroid(dimensions), __centroidvalidity(false) {};
         // The big three: cpy ctor, overloaded operator=, dtor
         Cluster(const Cluster &);
         Cluster &operator=(const Cluster &);
@@ -71,19 +74,36 @@ namespace Clustering {
         friend const Cluster operator+(const Cluster &lhs, const PointPtr &rhs);
         friend const Cluster operator-(const Cluster &lhs, const PointPtr &rhs);
 
-        unsigned int getid()const;
+        static unsigned int generateid();
+        unsigned int getId()const;
 
         int getSize();
 
-        void setcentroid(const Point &);
+        void setCentroid(const Point &);
 
-        const Point getcentroid();
+        const Point getCentroid() const;
 
-        void computecentroid();
+        void computeCentroid();
 
-        void pickPoints(int, Point []);
+        void pickPoints(unsigned int k, PointPtr *pointArray);
 
+        double intraClusterDistance() const;
 
+        friend double interClusterDistance(const Cluster &c1, const Cluster &c2);
+
+        int getClusterEdges();
+
+        friend double interClusterEdges(const Cluster &c1, const Cluster &c2);
+
+        void setPointDemensions(unsigned int);
+
+        LNodePtr getheadpointer() { return points; }
+
+        bool isCentroidValid() {return __centroidvalidity;}
+
+        const PointPtr &operator[](unsigned int u) const;
+
+        bool contains(const PointPtr &ptr) const;
 
     };
 

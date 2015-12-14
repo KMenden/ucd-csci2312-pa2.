@@ -10,6 +10,7 @@ namespace Clustering {
     class Point {
         int dim;
         double *coords;
+        static constexpr char POINT_VALUE_DELIM = ',';
 
     public:
         // Constructors

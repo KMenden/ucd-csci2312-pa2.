@@ -6,62 +6,28 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#include <unordered_map>
 
+//
 using namespace Clustering;
 using namespace std;
 
-
-template<int k, int dim>
-double KMeans<k ,dim >::mindistance(Point<double, dim> &point, Point<double, dim> centroid)
+double KMeans::mindistance(Point &point, Point centroid)
 {
 
     double distance = point.distanceTo(centroid);
     return distance;
 }
 
-
-template<int k, int dim>
-void KMeans<k, dim>::run()
+void KMeans::run()
 {
-    vector<Cluster<Point<double, dim>, dim>> clusterarray;
-    clusterarray.reserve(k);
-    for (int i = 0; i < k; i++)
-    {
-        clusterarray.emplace_back(pointdemensions);
-    }
-    int score = 0;
-    double scorediff = SCORE_DIFF_THRESHOLD + 1;
-    Cluster<Point<double, dim>, dim> point_space(dim);
-    ifstream csv(filename);
-    csv >> point_space;
-    csv.close();
-    clusterarray[0] = point_space;
-
-    point_space.computeMap();
-
-    vector<Point<double, dim>> pointarray;
-    pointarray.reserve(k);
-    for (int i = 0; i < k; i++)
-    {
-        pointarray.emplace_back(pointdemensions);
-    }
-    point_space.pickPoints(k, pointarray);
-
-    for (int i = 0; i < k; i++)
-    {
-        clusterarray[i].setcentroid(pointarray[i]);
-    }
-
 
     while (scorediff > SCORE_DIFF_THRESHOLD)
     {
         for (int i = 0; i < k; i++)
         {
-
-           typename std::forward_list<Point<double, dim>>::iterator currentit = clusterarray[i].getItBegin();
+            LNodePtr current = clusterarray[i].getheadpointer();
             double minimaldistance = 99999;
-            while (currentit != clusterarray[i].getItEnd())
+            while (current != nullptr)
             {
                 bool checkswap = false;
                 bool swap = false;
@@ -69,7 +35,7 @@ void KMeans<k, dim>::run()
                 for (int i2 = 0; i2 < k; i2++)
                 {
 
-                    double distance = mindistance(*currentit, clusterarray[i2].getcentroid());
+                    double distance = mindistance(*(current->p), clusterarray[i2].getCentroid());
                     if (distance < minimaldistance)
                     {
                         minimaldistance = distance;
@@ -78,17 +44,17 @@ void KMeans<k, dim>::run()
                     }
 
                 }
-                if (clusterindex != clusterarray[i].getid() - 1 && checkswap)
+                if (clusterindex != i && checkswap)
                 {
-                  typename Cluster<Point<double, dim>, dim>::Move moveclusters(*currentit, &clusterarray[i], &clusterarray[clusterindex]);
+                    Cluster::Move moveclusters(current->p, &clusterarray[i], &clusterarray[clusterindex]);
                     moveclusters.perform();
-                    currentit = clusterarray[i].getItBegin();
+                    current = clusterarray[i].getheadpointer();
                     swap = true;
                 }
 
                 if (swap == false)
                 {
-                    currentit++;
+                    current = current->next;
                 }
                 minimaldistance = 99999;
             }
@@ -96,36 +62,23 @@ void KMeans<k, dim>::run()
 
         for (int index = 0; index < k; index++)
         {
-            if (!clusterarray[index].checkValidCentroid())
+            if (!clusterarray[index].isCentroidValid())
             {
-                clusterarray[index].computecentroid();
+                clusterarray[index].computeCentroid();
             }
         }
 
-        int betaCV = computeClusteringScore(clusterarray);
+        int betaCV = computeClusteringScore();
 
         scorediff = abs(score - betaCV);
         score = betaCV;
     }
 
-    ofstream output("results.txt");
-    for (int i = 0; i < k; i++)
-    {
-        output << clusterarray[i];
-    }
-    output << "Number of Succesful imports: " << point_space.numberImported() << endl;
-    output << "Number of Failed imports: " << point_space.numberFailed() << endl;
-    for (int i = 0; i < k; i++)
-    {
-        cout << clusterarray[i];
-    }
-    cout <<"Number of Succesful imports: " << point_space.numberImported() << endl;
-    cout << "Number of Failed imports: " << point_space.numberFailed() << endl;
-    output.close();
+
 }
 
-template<int k, int dim>
-double KMeans<k, dim>::computeClusteringScore(vector<Cluster<Point<double, dim>, dim>> &clusterarray)
+
+double KMeans::computeClusteringScore()
 {
         double dIn = 0;
 
@@ -134,8 +87,6 @@ double KMeans<k, dim>::computeClusteringScore(vector<Cluster<Point<double, dim>,
             double sum = clusterarray[index].intraClusterDistance();
             dIn += sum;
         }
-
-
 
         double dOut = 0;
 
@@ -175,10 +126,40 @@ double KMeans<k, dim>::computeClusteringScore(vector<Cluster<Point<double, dim>,
             cindex++;
             cindex2 = i + 1;
         }
+    if(dIn == 0 || pIn == 0 || dOut == 0 || pOut == 0)
+    {
+        return 0;
+    }
+    else
+    {
         int computedscore = (dIn / pIn) / (dOut / pOut);
 
         return computedscore;
+    }
 }
 
-template<int k ,int dim>
-const int KMeans<k, dim>::SCORE_DIFF_THRESHOLD = 20;
+
+std::ostream &operator<<(std::ostream &os, const KMeans &kmeans)
+{
+    ofstream output("results.txt");
+        for (int i = 0; i < kmeans.k; i++)
+        {
+            output << kmeans.clusterarray[i];
+        }
+        for (int i = 0; i < kmeans.k; i++)
+        {
+            cout << kmeans.clusterarray[i];
+        }
+        output.close();
+
+    return os;
+}
+
+Cluster& KMeans::operator[](unsigned int u)
+{
+    return clusterarray[u];
+}
+const Cluster& KMeans::operator[](unsigned int u) const
+{
+    return clusterarray[u];
+}

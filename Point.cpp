@@ -6,7 +6,7 @@
 using namespace std;
 using namespace Clustering;
 
-
+//
 // Default constructor
 // Initializes the point to (0.0, 0.0, 0.0)
 Point::Point() {
@@ -312,7 +312,7 @@ namespace Clustering {
         int i = 0;
 
 
-        while (getline(input, value, ',')) {
+        while (getline(input, value, point.POINT_VALUE_DELIM)) {
             d = stod(value);
 
             cout << "Value: # " << i << "   " << d << endl;
@@ -347,7 +347,7 @@ double Point::distanceTo(Point &point1)
         sum += difference;
     }
 
-   sum = sqrt(sum);
+    sum = sqrt(sum);
 
   return sum;
 }
